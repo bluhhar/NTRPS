@@ -58,10 +58,37 @@ def download_images(query, class_name, num_images=1000):
         if downloaded_count >= num_images:
             break
 
+def download_mini_images(query, class_name, num_images=1000):
+    class_folder = os.path.join('dataset', class_name)
+    if not os.path.exists(class_folder):
+        os.makedirs(class_folder)
+
+    search_url = f"https://yandex.ru/images/search?text={query}"
+
+    response = requests.get(search_url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    downloaded_count = 0
+
+    base_url = 'https:'
+    for a in soup.find_all('img', class_='serp-item__thumb'):
+        img_url = a['src']
+        # из за получение //avatar, надо бы добавить https:// чтобы ссылка стала полной
+        if not img_url.startswith('http'):
+            img_url = base_url + img_url
+            image_filename = f"{downloaded_count:04d}.jpg"
+            image_path = os.path.join(class_folder, image_filename)
+            if download_image(img_url, image_path):
+                downloaded_count += 1
+                print(f"Загружено изображений для {class_name}: {downloaded_count}/{num_images}")
+
+            if downloaded_count >= num_images:
+                break
+
 def main():
     checkdataset()
-    #download_images("polar bear", "polar_bear", num_images=5)
-    download_images("brown bear", "brown bear", num_images=5)
+    download_mini_images("polar bear", "polar_bear", num_images=5)
+    download_mini_images("brown bear", "brown bear", num_images=5)
 
 
 if __name__ == "__main__":
