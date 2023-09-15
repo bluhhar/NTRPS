@@ -2,15 +2,14 @@ import requests
 import csv
 from datetime import datetime
 
-url = 'https://www.cbr-xml-daily.ru/latest.js'
+url = 'https://www.cbr-xml-daily.ru/archive/2023/09/13/daily_json.js'
 response = requests.get(url)
 data = response.json()
 
-today = datetime.now().strftime('%Y-%m-%d')
+today = datetime.now()
 
-with open('dataset.csv', 'w', newline='', encoding='utf-8') as f:
-    writer = csv.writer(f)
+with open('dataset.csv', 'w', newline='', encoding='utf-8') as file:
+    writer = csv.writer(file)
     writer.writerow(['Date', 'USD', 'EUR'])
     writer.writerow([today, 
-                     data['rates']['USD'], 
-                     data['rates']['EUR']])
+                     data['Valute']['USD']['Value']])
