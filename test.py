@@ -14,7 +14,7 @@ with open('dataset.csv', 'w', newline='', encoding='utf-8') as file:
     while current_date <= end_date:
         url = f'https://www.cbr-xml-daily.ru/archive/{current_date.year}/{current_date.strftime("%m")}/{current_date.strftime("%d")}/daily_json.js'
         
-        response = requests.get(url)
+        response = requests.get(url, headers={"User-Agent":"Mozilla/5.0"})
         if response.status_code == 200:
             data = response.json()
             today = current_date.strftime('%Y-%m-%d')
