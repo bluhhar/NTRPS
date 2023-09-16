@@ -1,7 +1,8 @@
 import os
 import requests
-from bs4 import BeautifulSoup
 import re
+
+from bs4 import BeautifulSoup
 
 def checkdataset():
     if not os.path.exists('dataset'):
@@ -42,49 +43,52 @@ def download_image(url, save_path):
         print(f'Ошибка при загрузке изображения: {url}')
         return False
 
-def download_images(query, num_images, mini_images = False):
+def download_images(query, num_images, mini_images = False, max_pages = 10):
     class_folder = checkrepodataset(query)
-    search_url = f'https://yandex.ru/images/search?text={query}'
-    
-    response = requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'})
-    soup = BeautifulSoup(response.text, 'html.parser')
 
     downloaded_count = 0
 
     base_url = 'https:'
-
-    if (mini_images == False):
-        for a in soup.find_all('a', class_='serp-item__link'):
-            img_url = a['href']
-            # Получаем полный URL изображения
-            img_url = parserurl(img_url)
-            image_filename = f"{downloaded_count:04d}.jpg"
-            image_path = os.path.join(class_folder, image_filename)
-            if download_image(img_url, image_path):
-                downloaded_count += 1
-                print(f"Загружено изображений для {query}: {downloaded_count}/{num_images}")
-
-            if downloaded_count >= num_images:
-                break
-    else:
-        for a in soup.find_all('img', class_='serp-item__thumb'):
-            img_url = a['src']
-            # из за получение //avatar, надо бы добавить https:// чтобы ссылка стала полной
-            if not img_url.startswith('http'):
-                img_url = base_url + img_url
-                image_filename = f'{downloaded_count:04d}.jpg'
+    
+    #а вот это чтобы без движков было, грузим странички
+    for page in range(0, max_pages):
+        search_url = f'https://yandex.ru/images/search?text={query}&p={page}'
+        
+        response = requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'})
+        soup = BeautifulSoup(response.text, 'html.parser')
+        if (mini_images == False):
+            for a in soup.find_all('a', class_='serp-item__link'):
+                img_url = a['href']
+                # Получаем полный URL изображения
+                img_url = parserurl(img_url)
+                image_filename = f"{downloaded_count:04d}.jpg"
                 image_path = os.path.join(class_folder, image_filename)
                 if download_image(img_url, image_path):
                     downloaded_count += 1
-                    print(f'Загружено изображений для {query}: {downloaded_count}/{num_images}')
+                    print(f"Загружено изображений для {query}: {downloaded_count}/{num_images}")
 
                 if downloaded_count >= num_images:
                     break
+        else:
+            for a in soup.find_all('img', class_='serp-item__thumb'):
+                img_url = a['src']
+                # из за получение //avatar, надо бы добавить https:// чтобы ссылка стала полной
+                if not img_url.startswith('http'):
+                    img_url = base_url + img_url
+                    image_filename = f'{downloaded_count:04d}.jpg'
+                    image_path = os.path.join(class_folder, image_filename)
+                    if download_image(img_url, image_path):
+                        downloaded_count += 1
+                        print(f'Загружено изображений для {query}: {downloaded_count}/{num_images}')
+
+                    if downloaded_count >= num_images:
+                        break
 
 def main():
     checkdataset()
-    download_images('polar bear', num_images = 5, mini_images = True)
-    download_images('brown bear', num_images = 5, mini_images = True)
+    download_images('polar bear', num_images = 40, mini_images = True, max_pages=2)
+    #download_images('polar bear', num_images = 5, mini_images = True)
+    #download_images('brown bear', num_images = 5, mini_images = True)
 
 if __name__ == '__main__':
     main()
