@@ -2,11 +2,7 @@ import requests
 import csv
 from datetime import datetime, timedelta
 
-def main():
-    start_date = datetime(2023, 9, 14)
-
-    end_date = datetime.now()
-
+def writedataset(start_date = datetime(2023, 9, 14), end_date = datetime.now()):
     with open('dataset.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(['Date', 'USD'])
@@ -22,16 +18,19 @@ def main():
                 writer.writerow([today, data['Valute']['USD']['Value']])
             
             current_date += timedelta(days=1)
-    
 
+def readdataset():
     csv_file_path = 'dataset.csv'
 
     with open(csv_file_path, 'r', newline='', encoding='utf-8') as csv_file:
-
         csv_reader = csv.reader(csv_file)
-
         for row in csv_reader:
             print(row)
+
+def main():
+    writedataset()
+
+    readdataset()
 
 
 if __name__ == "__main__":
