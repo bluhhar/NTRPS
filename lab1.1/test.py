@@ -22,6 +22,16 @@ def main():
                 writer.writerow([today, data['Valute']['USD']['Value']])
             
             current_date += timedelta(days=1)
+    
+
+    csv_file_path = 'dataset.csv'
+
+    with open(csv_file_path, 'r', newline='', encoding='utf-8') as csv_file:
+
+        csv_reader = csv.reader(csv_file)
+
+        for row in csv_reader:
+            print(row)
 
 
 if __name__ == "__main__":
