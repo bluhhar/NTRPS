@@ -49,7 +49,7 @@ def download_images(query, num_images, mini_images = False, max_pages = 10):
     downloaded_count = 0
 
     base_url = 'https:'
-    
+
     #а вот это чтобы без движков было, грузим странички
     for page in range(0, max_pages):
         search_url = f'https://yandex.ru/images/search?text={query}&p={page}'
@@ -59,7 +59,7 @@ def download_images(query, num_images, mini_images = False, max_pages = 10):
         if (mini_images == False):
             for a in soup.find_all('a', class_='serp-item__link'):
                 img_url = a['href']
-                # Получаем полный URL изображения
+                # получаем полный URL изображения
                 img_url = parserurl(img_url)
                 image_filename = f"{downloaded_count:04d}.jpg"
                 image_path = os.path.join(class_folder, image_filename)
@@ -87,8 +87,8 @@ def download_images(query, num_images, mini_images = False, max_pages = 10):
 def main():
     checkdataset()
     download_images('polar bear', num_images = 40, mini_images = True, max_pages=2)
-    #download_images('polar bear', num_images = 5, mini_images = True)
-    #download_images('brown bear', num_images = 5, mini_images = True)
+    #download_images('polar bear', num_images = 5, mini_images = True, max_pages=0)
+    #download_images('brown bear', num_images = 5, mini_images = True, max_pages=0)
 
 if __name__ == '__main__':
     main()
