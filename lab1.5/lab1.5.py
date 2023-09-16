@@ -29,7 +29,7 @@ def parserurl(url):
 
 def download_image(url, save_path):
     try:
-        response = requests.get(url, stream=True)
+        response = requests.get(url, headers={'User-Agent':'Mozilla/5.0'}, stream=True)
         if response.status_code == 200:
             with open(save_path, 'wb') as file:
                 for chunk in response.iter_content(1024):
@@ -46,7 +46,7 @@ def download_images(query, num_images, mini_images = False):
     class_folder = checkrepodataset(query)
     search_url = f'https://yandex.ru/images/search?text={query}'
     
-    response = requests.get(search_url)
+    response = requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'})
     soup = BeautifulSoup(response.text, 'html.parser')
 
     downloaded_count = 0
