@@ -4,12 +4,12 @@ import re
 
 from bs4 import BeautifulSoup
 
-def checkdataset():
+def check_dataset():
     if not os.path.exists('dataset'):
         os.makedirs('dataset')
 
 
-def checkrepodataset(class_name):
+def check_repo_dataset(class_name):
     class_folder = os.path.join('dataset', class_name)
     if not os.path.exists(class_folder):
         os.makedirs(class_folder)
@@ -17,7 +17,7 @@ def checkrepodataset(class_name):
     else:
         return class_folder
 
-def parserurl(url):
+def parser_url(url):
     pattern = r'img_url=([^&]+)&text='
     match = re.search(pattern, url)
 
@@ -44,7 +44,7 @@ def download_image(url, save_path):
         return False
 
 def download_images(query, num_images, mini_images = False, max_pages = 10):
-    class_folder = checkrepodataset(query)
+    class_folder = check_repo_dataset(query)
 
     downloaded_count = 0
 
@@ -85,9 +85,9 @@ def download_images(query, num_images, mini_images = False, max_pages = 10):
                         break
 
 def main():
-    checkdataset()
-    download_images('polar bear', num_images = 40, mini_images = True, max_pages=2)
-    #download_images('polar bear', num_images = 5, mini_images = True, max_pages=0)
+    check_dataset()
+    #download_images('polar bear', num_images = 40, mini_images = True, max_pages=2)
+    download_images('Артас Король-лич', num_images = 5, mini_images = True, max_pages=1)
     #download_images('brown bear', num_images = 5, mini_images = True, max_pages=0)
 
 if __name__ == '__main__':
