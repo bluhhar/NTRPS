@@ -32,6 +32,7 @@ def download_reviews(num_reviews, star_rating, full_mode = False):
     pages = 2
     search_url = f'https://www.livelib.ru/reviews/~{pages}#reviews'
     response = requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'})
+    response.encoding = 'utf-8'
     soup = BeautifulSoup(response.text, 'html.parser')
     for review in soup.find_all('div', class_='lenta-card'):
         rating_tag = review.find('span', class_='lenta-card__mymark')
