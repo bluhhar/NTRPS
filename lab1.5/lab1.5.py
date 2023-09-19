@@ -4,13 +4,16 @@ import re
 
 from bs4 import BeautifulSoup
 
-def check_dataset():
-    if not os.path.exists('dataset'):
-        os.makedirs('dataset')
+#путь .py
+CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
+def check_dataset():
+    dataset_directory = os.path.join(CURR_DIR, 'dataset')
+    if not os.path.exists(dataset_directory):
+        os.makedirs(dataset_directory)
 
 def check_repo_dataset(class_name):
-    class_folder = os.path.join('dataset', class_name)
+    class_folder = os.path.join(CURR_DIR + '\dataset', class_name)
     if not os.path.exists(class_folder):
         os.makedirs(class_folder)
         return class_folder
@@ -60,7 +63,7 @@ def download_images(query, num_images, mini_images = False, max_pages = 10):
             for a in soup.find_all('a', class_='serp-item__link'):
                 img_url = a['href']
                 # получаем полный URL изображения
-                img_url = parserurl(img_url)
+                img_url = parser_url(img_url)
                 image_filename = f"{downloaded_count:04d}.jpg"
                 image_path = os.path.join(class_folder, image_filename)
                 if download_image(img_url, image_path):
@@ -87,8 +90,9 @@ def download_images(query, num_images, mini_images = False, max_pages = 10):
 def main():
     check_dataset()
     #download_images('polar bear', num_images = 40, mini_images = True, max_pages=2)
-    download_images('Артас Король-лич', num_images = 5, mini_images = True, max_pages=1)
-    #download_images('brown bear', num_images = 5, mini_images = True, max_pages=0)
+    #download_images('Артас Король-лич', num_images = 5, mini_images = True, max_pages=1)
+    #download_images('brown bear', num_images = 5, mini_images = True, max_pages=1)
+    download_images('Gintoki Sakata', num_images = 5, mini_images = True, max_pages=1)
 
 if __name__ == '__main__':
     main()
