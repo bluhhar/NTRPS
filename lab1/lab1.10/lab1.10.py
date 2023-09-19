@@ -28,25 +28,26 @@ def parse_rating(str):
     else:
         return 0
 
-def download_reviews(num_reviews, star_rating):
+def download_reviews(num_reviews, star_rating, full_mode = False):
     pages = 2
     search_url = f'https://www.livelib.ru/reviews/~{pages}#reviews'
     response = requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'})
     soup = BeautifulSoup(response.text, 'html.parser')
-    for review in soup.find_all('article', class_='review-card lenta__item'):
+    for review in soup.find_all('div', class_='lenta-card'):
         rating_tag = review.find('span', class_='lenta-card__mymark')
         title_tag = review.find('h3', class_='lenta-card__title')
         link = title_tag.find('a')['href']
         title = title_tag.find('a').text
-        if rating_tag:
-            rating = rating_tag.text
-            rating = parse_rating(rating)
-            
-            print('rating', rating)
-            print('title', title)
-            print('link', link)
-        else: #нехорошие люди не ставят рейтинг книги
-            print('rating not found')
+        rating = rating_tag.text
+        rating = parse_rating(rating)
+        
+        
+
+        print('rating', rating)
+        print('title', title)
+        print('link', link)
+
+        break
 
          
 
