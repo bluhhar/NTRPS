@@ -41,15 +41,15 @@ def download_reviews(num_reviews, star_rating, full_mode = False):
         rating = rating_tag.text
         rating = parse_rating(rating)
         
-        
+        text_escaped_tag = review.find('div', id='lenta-card__text-review-escaped')
+        text = text_escaped_tag.text
 
         print('rating', rating)
         print('title', title)
         print('link', link)
+        print('text', text)
 
         break
-
-         
 
 def main():
     check_dataset()
