@@ -1,9 +1,13 @@
+import os
 import requests
 import csv
 from datetime import datetime, timedelta
 
+#путь .py
+CURR_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def write_dataset(start_date = datetime(2023, 9, 10), end_date = datetime.now()):
-    with open('dataset.csv', 'w', newline='', encoding='utf-8') as file:
+    with open(CURR_DIR + '\dataset.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(['Date', 'USD'])
 
@@ -20,7 +24,7 @@ def write_dataset(start_date = datetime(2023, 9, 10), end_date = datetime.now())
             current_date += timedelta(days=1)
 
 def read_dataset():
-    csv_file_path = 'dataset.csv'
+    csv_file_path = CURR_DIR + '\dataset.csv'
 
     with open(csv_file_path, 'r', newline='', encoding='utf-8') as csv_file:
         csv_reader = csv.reader(csv_file)
