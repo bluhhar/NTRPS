@@ -32,7 +32,7 @@ def read_dataset():
             print(row)
 
 def main():
-    write_dataset()
+    write_dataset(start_date = datetime(2023, 8, 30), end_date = datetime.now())
     read_dataset()
 
 if __name__ == "__main__":
