@@ -16,7 +16,7 @@ def write_dataset(start_date = datetime(2023, 9, 10), end_date = datetime.now())
             url = f'https://www.cbr-xml-daily.ru/archive/{current_date.year}/{current_date.strftime("%m")}/{current_date.strftime("%d")}/daily_json.js'
             
             response = requests.get(url, headers={'User-Agent':'Mozilla/5.0'})
-            if response.status_code == 200:
+            if(response.status_code == 200):
                 data = response.json()
                 today = current_date.strftime('%Y-%m-%d')
                 writer.writerow([today, data['Valute']['USD']['Value']])
