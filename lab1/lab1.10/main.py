@@ -32,43 +32,51 @@ def download_reviews(num_reviews, star_rating, full_mode = False):
     pages = 10
     for rate in range(4, 5 + 1):
         downloaded_count = 0
+        rate_folder = check_repo_dataset(str(rate))
         for page in range(2, pages):
             search_url = f'https://www.livelib.ru/reviews/~{page}#reviews'
             response = requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'})
             response.encoding = 'utf-8' #чтобы были русские символы а то кряки будут без форса кодировки
             soup = BeautifulSoup(response.text, 'html.parser')
-            if(full_mode == False):
-                for review in soup.find_all('div', class_='lenta-card'):
-                    rating_tag = review.find('span', class_='lenta-card__mymark')
-                    #title_tag = review.find('h3', class_='lenta-card__title')
-                    #link = title_tag.find('a')['href']
-                    #title = title_tag.find('a').text
-                    rating = rating_tag.text #не забыть про проверку рейтинга а то люди некоторые не ставят цифру
-                    rating = parse_rating(rating)
-                    if(int(rating) == rate):
+            if(response.status_code == 200):
+                if(full_mode == False):
+                    for review in soup.find_all('div', class_='lenta-card'):
+                        rating_tag = review.find('span', class_='lenta-card__mymark')
+                        #title_tag = review.find('h3', class_='lenta-card__title')
+                        #link = title_tag.find('a')['href']
+                        #title = title_tag.find('a').text
+                        rating = rating_tag.text #не забыть про проверку рейтинга а то люди некоторые не ставят цифру
+                        rating = parse_rating(rating)
+                        if(int(rating) == rate):
 
-                        title_book_tag = review.find('a', class_='lenta-card__book-title')
-                        title_book = title_book_tag.text
-                        
-                        text_escaped_tag = review.find('div', id='lenta-card__text-review-escaped')
-                        text = text_escaped_tag.text
+                            title_book_tag = review.find('a', class_='lenta-card__book-title')
+                            title_book = title_book_tag.text
+                            
+                            text_escaped_tag = review.find('div', id='lenta-card__text-review-escaped')
+                            text = text_escaped_tag.text
 
-                        print('title book', title_book)
-                        print('rating', rating)
-                        #print('title', title)
-                        #print('link', link)
-                        print('text', text)
+                            review_filename = f'{downloaded_count:04d}.txt'
+                            review_path = os.path.join(rate_folder, review_filename)
+                            with open(review_path, "w") as file:
+                                file.write(title_book + "\n")
+                                file.write(text)
+                            
+                            #print('title book', title_book)
+                            #print('rating', rating)
+                            #print('title', title)
+                            #print('link', link)
+                            #print('text', text)
 
-                        downloaded_count += 1
-                        print(downloaded_count)
-                        
-                    if(downloaded_count >= num_reviews):
-                        break
-            else:
-                print('test')
+                            downloaded_count += 1
+                            #print(downloaded_count)
+                            
+                        if(downloaded_count >= num_reviews):
+                            break
+                else:
+                    print('test')
 
-            if(downloaded_count >= num_reviews):
-                break
+                if(downloaded_count >= num_reviews):
+                    break
 
 def main():
     check_dataset()

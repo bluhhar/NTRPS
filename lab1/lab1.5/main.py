@@ -51,7 +51,7 @@ def download_image(url, save_path):
         return False
 
 def download_images(query, num_images, mini_images = False):
-    max_pages = calc_pages(num_images)
+    pages = calc_pages(num_images)
     class_folder = check_repo_dataset(query)
 
     downloaded_count = 0
@@ -59,7 +59,7 @@ def download_images(query, num_images, mini_images = False):
     base_url = 'https:'
 
     #а вот это чтобы без движков было, грузим странички
-    for page in range(0, max_pages):
+    for page in range(0, pages):
         search_url = f'https://yandex.ru/images/search?text={query}&p={page}'
         
         response = requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'})
@@ -69,7 +69,7 @@ def download_images(query, num_images, mini_images = False):
                 img_url = a['href']
                 # получаем полный URL изображения
                 img_url = parser_url(img_url)
-                image_filename = f"{downloaded_count:04d}.jpg"
+                image_filename = f'{downloaded_count:04d}.jpg'
                 image_path = os.path.join(class_folder, image_filename)
                 if(download_image(img_url, image_path)):
                     downloaded_count += 1
@@ -97,7 +97,7 @@ def main():
     #download_images('polar bear', num_images = 5, mini_images = True, max_pages=1)
     #download_images('Артас Король-лич', num_images = 5, mini_images = True, max_pages=1)
     #download_images('brown bear', num_images = 5, mini_images = True, max_pages=1)
-    download_images('Gintama', num_images = 89, mini_images = True)
+    download_images('Rezero', num_images = 5, mini_images = True)
 
 if __name__ == '__main__':
     main()
