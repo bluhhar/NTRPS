@@ -32,8 +32,9 @@ def parse_rating(str):
 def calc_pages(num_reviews):
     return num_reviews // 25 + (num_reviews % 25 > 0) if num_reviews > 25 else 2
 
-def download_reviews(num_reviews, full_mode = False):
-    pages = calc_pages(num_reviews)
+def download_reviews(num_reviews, full_mode = False, pages = 0):
+    if(pages == 0):
+        pages = calc_pages(num_reviews)
     for rate in range(1, 5 + 1):
         downloaded_count = 0
         rate_folder = check_repo_dataset(str(rate))
@@ -62,12 +63,13 @@ def download_reviews(num_reviews, full_mode = False):
 
                                 review_filename = f'{downloaded_count:04d}.txt'
                                 review_path = os.path.join(rate_folder, review_filename)
-                                with open(review_path, "w") as file:
+                                with open(review_path, "w", encoding="utf-8") as file: #кодировку для неизвестных символов charmap
                                     file.write(title_book + "\n")
                                     file.write(text)
 
                                 downloaded_count += 1
-                                print(f"Загружено ревью для {rate}: {downloaded_count}/{num_reviews}")
+                                print(f"Загружено рецензий для {rate}: {downloaded_count}/{num_reviews}")
+
                         if(downloaded_count >= num_reviews):
                             break
                 else:
@@ -78,7 +80,7 @@ def download_reviews(num_reviews, full_mode = False):
 
 def main():
     check_dataset()
-    download_reviews(2, False)
+    download_reviews(2, False, 10)
 
 if __name__ == '__main__':
     main()
