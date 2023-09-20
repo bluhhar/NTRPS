@@ -32,18 +32,21 @@ def download_reviews(num_reviews, star_rating, full_mode = False):
     pages = 2
     search_url = f'https://www.livelib.ru/reviews/~{pages}#reviews'
     response = requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'})
-    response.encoding = 'utf-8'
+    response.encoding = 'utf-8' #чтобы были русские символы а то кряки будут без форса кодировки
     soup = BeautifulSoup(response.text, 'html.parser')
     for review in soup.find_all('div', class_='lenta-card'):
         rating_tag = review.find('span', class_='lenta-card__mymark')
         title_tag = review.find('h3', class_='lenta-card__title')
         link = title_tag.find('a')['href']
         title = title_tag.find('a').text
-        rating = rating_tag.text
+        rating = rating_tag.text #не забыть про проверку рейтинга а то люди некоторые не ставят цифру
         rating = parse_rating(rating)
         
         text_escaped_tag = review.find('div', id='lenta-card__text-review-escaped')
         text = text_escaped_tag.text
+
+        #text_full_tag = review.find('div', id='lenta-card__text-review-full')
+        #text = text_full_tag.text
 
         print('rating', rating)
         print('title', title)
