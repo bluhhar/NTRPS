@@ -30,14 +30,14 @@ def parse_rating(str):
 
 #на одной странице 25 отзывов
 def calc_pages(num_reviews):
-    return num_reviews // 25 + (num_reviews % 25 > 0) if num_reviews > 25 else 1
+    return num_reviews // 25 + (num_reviews % 25 > 0) if num_reviews > 25 else 2
 
 def download_reviews(num_reviews, full_mode = False):
     pages = calc_pages(num_reviews)
     for rate in range(1, 5 + 1):
         downloaded_count = 0
         rate_folder = check_repo_dataset(str(rate))
-        for page in range(2, pages):
+        for page in range(2, pages + 1):
             search_url = f'https://www.livelib.ru/reviews/~{page}#reviews'
             response = requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'})
             response.encoding = 'utf-8' #чтобы были русские символы а то кряки будут без форса кодировки
@@ -49,24 +49,25 @@ def download_reviews(num_reviews, full_mode = False):
                         #title_tag = review.find('h3', class_='lenta-card__title')
                         #link = title_tag.find('a')['href']
                         #title = title_tag.find('a').text
-                        rating = rating_tag.text #не забыть про проверку рейтинга а то люди некоторые не ставят цифру
-                        rating = parse_rating(rating)
-                        if(int(rating) == rate):
+                        if rating_tag: #нехорошие люди не ставят рейтинг книги
+                            rating = rating_tag.text #не забыть про проверку рейтинга а то люди некоторые не ставят цифру
+                            rating = parse_rating(rating)
+                            if(int(rating) == rate):
 
-                            title_book_tag = review.find('a', class_='lenta-card__book-title')
-                            title_book = title_book_tag.text
-                            
-                            text_escaped_tag = review.find('div', id='lenta-card__text-review-escaped')
-                            text = text_escaped_tag.text
+                                title_book_tag = review.find('a', class_='lenta-card__book-title')
+                                title_book = title_book_tag.text
+                                
+                                text_escaped_tag = review.find('div', id='lenta-card__text-review-escaped')
+                                text = text_escaped_tag.text
 
-                            review_filename = f'{downloaded_count:04d}.txt'
-                            review_path = os.path.join(rate_folder, review_filename)
-                            with open(review_path, "w") as file:
-                                file.write(title_book + "\n")
-                                file.write(text)
+                                review_filename = f'{downloaded_count:04d}.txt'
+                                review_path = os.path.join(rate_folder, review_filename)
+                                with open(review_path, "w") as file:
+                                    file.write(title_book + "\n")
+                                    file.write(text)
 
-                            downloaded_count += 1
-                            
+                                downloaded_count += 1
+                                print(f"Загружено ревью для {rate}: {downloaded_count}/{num_reviews}")
                         if(downloaded_count >= num_reviews):
                             break
                 else:
