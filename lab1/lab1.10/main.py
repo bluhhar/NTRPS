@@ -32,6 +32,10 @@ def parse_rating(str):
 def calc_pages(num_reviews):
     return num_reviews // 25 + (num_reviews % 25 > 0) if num_reviews > 25 else 2
 
+#TODO: доделать полное скачивание рецензии, пока думаю как сделать без движка
+#Когда нажимаешь развернуть появляется нужный тег lenta-card__text-review-full
+#До нажатия кнопки данного тега не существует в html разметки
+#Как то стригирить ивент для всех лента кардов и потом загрузить страничку
 def download_reviews(num_reviews, full_mode = False, pages = 0):
     if(pages == 0):
         pages = calc_pages(num_reviews)
