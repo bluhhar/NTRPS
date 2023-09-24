@@ -83,21 +83,21 @@ def download_images(query, num_images, mini_images = False):
                 # из за получение //avatar, надо бы добавить https:// чтобы ссылка стала полной
                 if(not img_url.startswith('http')):
                     img_url = base_url + img_url
-                    image_filename = f'{downloaded_count:04d}.jpg'
-                    image_path = os.path.join(class_folder, image_filename)
-                    if(download_image(img_url, image_path)):
-                        downloaded_count += 1
-                        print(f'Загружено изображений для {query}: {downloaded_count}/{num_images}')
+                image_filename = f'{downloaded_count:04d}.jpg'
+                image_path = os.path.join(class_folder, image_filename)
+                if(download_image(img_url, image_path)):
+                    downloaded_count += 1
+                    print(f'Загружено изображений для {query}: {downloaded_count}/{num_images}')
 
-                    if(downloaded_count >= num_images):
-                        break
+                if(downloaded_count >= num_images):
+                    break
 
 def main():
     check_dataset()
     #download_images('polar bear', num_images = 5, mini_images = True, max_pages=1)
     #download_images('Артас Король-лич', num_images = 5, mini_images = True, max_pages=1)
     #download_images('brown bear', num_images = 5, mini_images = True, max_pages=1)
-    download_images('Rezero', num_images = 5, mini_images = True)
+    download_images('Path of Exile Atlas Invasion', num_images = 50, mini_images = True)
 
 if __name__ == '__main__':
     main()
