@@ -35,6 +35,12 @@ def calc_pages(num_images):
     return num_images // 30 + (num_images % 30 > 0) if num_images > 30 else 1
 
 
+def get_html_tags(mini_images):
+    if mini_images:
+        return 'img', 'serp-item__thumb', 'src'
+    else:
+        return 'a', 'serp-item__link', 'href'
+
 def download_image(url, save_path):
     try:
         response = requests.get(url, headers={'User-Agent':'Mozilla/5.0'}, stream=True)
@@ -65,23 +71,17 @@ def download_images(query, num_images, mini_images = False):
         #сделал с with для автоматического закрытия соединения
         with requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'}) as response:
             soup = BeautifulSoup(response.text, 'html.parser')
-            tag = 'a'
-            tag_class = 'serp-item__link'
-            tag_source = 'href'
-            if(mini_images == True):
-                tag = 'img'
-                tag_class = 'serp-item__thumb'
-                tag_source = 'src'
+
+            tag, tag_class, tag_source = get_html_tags(mini_images)
 
             for a in soup.find_all(tag, class_=tag_class):
                 img_url = a[tag_source]
                 # получаем полный URL изображения
-                if(mini_images == False):
+                if mini_images and not img_url.startswith('http'):
+                    img_url = base_url + img_url
+                elif img_url.startswith('/images'):
                     img_url = parser_url(img_url)
-                else:
-                    # из за получение //avatar, надо бы добавить https:// чтобы ссылка стала полной
-                    if(not img_url.startswith('http')):
-                        img_url = base_url + img_url
+                    
                 image_filename = f'{downloaded_count:04d}.jpg'
                 image_path = os.path.join(class_folder, image_filename)
                 if(download_image(img_url, image_path)):
@@ -96,8 +96,8 @@ def main():
     #download_images('polar bear', num_images = 5, mini_images = True, max_pages=1)
     #download_images('Артас Король-лич', num_images = 5, mini_images = True, max_pages=1)
     #download_images('brown bear', num_images = 5, mini_images = True, max_pages=1)
-    download_images('Ведьмак', num_images = 5, mini_images = False)
-    download_images('Скайрим', 5, True)
+    download_images('Бурый медведь', 5, False)
+    download_images('Полярный медведь', 5, True)
 
 if __name__ == '__main__':
     main()
