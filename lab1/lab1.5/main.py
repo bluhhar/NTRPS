@@ -97,7 +97,7 @@ def main():
     #download_images('polar bear', num_images = 5, mini_images = True, max_pages=1)
     #download_images('Артас Король-лич', num_images = 5, mini_images = True, max_pages=1)
     #download_images('brown bear', num_images = 5, mini_images = True, max_pages=1)
-    download_images('Path of Exile Atlas Invasion', num_images = 50, mini_images = True)
+    download_images('Burning Crusade', num_images = 5, mini_images = False)
 
 if __name__ == '__main__':
     main()
