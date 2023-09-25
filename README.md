@@ -11,7 +11,7 @@
 ```shell
 git clone https://github.com/bluhhar/NTRPS
 python -m venv venv
-venv\Scripts\activate.bat (тут проверить cmd (venv) в VS Code в Terminal добавить command prompt)
+venv\Scripts\activate.batB
 pip install -r requirements.txt
 ```
 ## [Лабораторная работа №1](https://github.com/bluhhar/NTRPS/blob/main/lab1/lab01__Python_M_PIN_RIS_2306_Timofeev%20Aleksander.docx) (+)

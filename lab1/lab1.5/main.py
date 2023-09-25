@@ -62,32 +62,31 @@ def download_images(query, num_images, mini_images = False):
     for page in range(0, pages):
         search_url = f'https://yandex.ru/images/search?text={query}&p={page}'
         
-        response = requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'})
-        soup = BeautifulSoup(response.text, 'html.parser')
-        if (mini_images == False):
-            for a in soup.find_all('a', class_='serp-item__link'):
-                img_url = a['href']
+        #сделал с with для автоматического закрытия соединения
+        with requests.get(search_url, headers={'User-Agent':'Mozilla/5.0'}) as response:
+            soup = BeautifulSoup(response.text, 'html.parser')
+            tag = 'a'
+            tag_class = 'serp-item__link'
+            tag_source = 'href'
+            if(mini_images == True):
+                tag = 'img'
+                tag_class = 'serp-item__thumb'
+                tag_source = 'src'
+
+            for a in soup.find_all(tag, class_=tag_class):
+                img_url = a[tag_source]
                 # получаем полный URL изображения
-                img_url = parser_url(img_url)
+                if(mini_images == False):
+                    img_url = parser_url(img_url)
+                else:
+                    # из за получение //avatar, надо бы добавить https:// чтобы ссылка стала полной
+                    if(not img_url.startswith('http')):
+                        img_url = base_url + img_url
                 image_filename = f'{downloaded_count:04d}.jpg'
                 image_path = os.path.join(class_folder, image_filename)
                 if(download_image(img_url, image_path)):
                     downloaded_count += 1
                     print(f"Загружено изображений для {query}: {downloaded_count}/{num_images}")
-
-                if(downloaded_count >= num_images):
-                    break
-        else:
-            for a in soup.find_all('img', class_='serp-item__thumb'):
-                img_url = a['src']
-                # из за получение //avatar, надо бы добавить https:// чтобы ссылка стала полной
-                if(not img_url.startswith('http')):
-                    img_url = base_url + img_url
-                image_filename = f'{downloaded_count:04d}.jpg'
-                image_path = os.path.join(class_folder, image_filename)
-                if(download_image(img_url, image_path)):
-                    downloaded_count += 1
-                    print(f'Загружено изображений для {query}: {downloaded_count}/{num_images}')
 
                 if(downloaded_count >= num_images):
                     break
@@ -97,7 +96,8 @@ def main():
     #download_images('polar bear', num_images = 5, mini_images = True, max_pages=1)
     #download_images('Артас Король-лич', num_images = 5, mini_images = True, max_pages=1)
     #download_images('brown bear', num_images = 5, mini_images = True, max_pages=1)
-    download_images('Burning Crusade', num_images = 5, mini_images = False)
+    download_images('Ведьмак', num_images = 5, mini_images = False)
+    download_images('Скайрим', 5, True)
 
 if __name__ == '__main__':
     main()
