@@ -34,7 +34,6 @@ def parser_url(url):
 def calc_pages(num_images):
     return num_images // 30 + (num_images % 30 > 0) if num_images > 30 else 1
 
-
 def get_html_tags(mini_images):
     if mini_images:
         return 'img', 'serp-item__thumb', 'src'
@@ -81,7 +80,7 @@ def download_images(query, num_images, mini_images = False):
                     img_url = base_url + img_url
                 elif img_url.startswith('/images'):
                     img_url = parser_url(img_url)
-                    
+
                 image_filename = f'{downloaded_count:04d}.jpg'
                 image_path = os.path.join(class_folder, image_filename)
                 if(download_image(img_url, image_path)):

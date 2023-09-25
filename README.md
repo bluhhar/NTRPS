@@ -14,7 +14,10 @@ python -m venv venv
 venv\Scripts\activate.batB
 pip install -r requirements.txt
 ```
-## [Лабораторная работа №1](https://github.com/bluhhar/NTRPS/blob/main/lab1/lab01__Python_M_PIN_RIS_2306_Timofeev%20Aleksander.docx) (+)
+<details>
+    <summary><h1><strong>Лабораторная работа №1</strong></h1></summary>
+
+## [Отчет](https://github.com/bluhhar/NTRPS/blob/main/lab1/lab01__Python_M_PIN_RIS_2306_Timofeev%20Aleksander.docx) (+) | Защита (+)
 
 ### [Вариант №1 (ЦРБ Валюты)](#section-1)
 С использованием веб-сайта https://www.cbr-xml-daily.ru получить курс доллара по дням на максимально возможный период. Результат сохранить в выходной файл dataset.csv, где каждая строка будет содержать дату и курс, разделенные запятой.
@@ -75,3 +78,5 @@ pip install -r requirements.txt
 
 > requests \
 > beautifulsoup4
+
+</details>
