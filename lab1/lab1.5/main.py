@@ -12,7 +12,7 @@ def check_dataset():
     if not os.path.exists(dataset_directory):
         os.makedirs(dataset_directory)
 
-def check_repo_dataset(class_name):
+def check_repo_dataset(class_name: str) -> str:
     class_folder = os.path.join(CURR_DIR + '\dataset', class_name)
     if not os.path.exists(class_folder):
         os.makedirs(class_folder)
