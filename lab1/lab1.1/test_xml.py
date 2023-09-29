@@ -8,6 +8,12 @@ from datetime import datetime
 #путь .py
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
+def check_repository(dir: str, name: str) -> None:
+    dataset_directory = os.path.join(dir, name)
+    if not os.path.exists(dataset_directory):
+        os.makedirs(dataset_directory)
+    return dataset_directory
+
 def get_ids_of_currency() -> None:
     url = 'http://www.cbr.ru/scripts/XML_daily.asp'
     response = requests.get(url, headers={'User-Agent':'Mozilla/5.0'})
@@ -23,7 +29,7 @@ def get_ids_of_currency() -> None:
             
             data.append([id, num_code, char_code, currency_name])
         
-        with open(CURR_DIR + f'\ids_currency.csv', 'w', newline='', encoding='utf-8') as csv_file:
+        with open(CURR_DIR + f'\currency\ids_currency.csv', 'w', newline='', encoding='utf-8') as csv_file:
             csv_writer = csv.writer(csv_file)
             csv_writer.writerow(['id', 'num_code', 'char_code', 'currency_name'])
             for row in data:
@@ -38,7 +44,7 @@ def get_currency_id(file_path: str, char_code: str) -> str:
                 return row[0]
 
 def write_dataset(name_currency:str, start_date: str, end_date: str) -> None:
-    id_currency = get_currency_id(CURR_DIR + '\ids_currency.csv', name_currency)
+    id_currency = get_currency_id(CURR_DIR + '\currency\ids_currency.csv', name_currency)
     if id_currency:
         url = f"https://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={start_date}&date_req2={end_date}&VAL_NM_RQ={id_currency}"
         response = requests.get(url, headers={'User-Agent':'Mozilla/5.0'})
@@ -57,9 +63,9 @@ def write_dataset(name_currency:str, start_date: str, end_date: str) -> None:
         
             start_date = datetime.strptime(start_date, '%d/%m/%Y').strftime('%Y%m%d')
             end_date= datetime.strptime(end_date, '%d/%m/%Y').strftime('%Y%m%d')
-            with open(CURR_DIR + f'\{name_currency}_{start_date}_{end_date}.csv', 'w', newline='', encoding='utf-8') as csv_file:
+            with open(CURR_DIR + f'\currency\{name_currency}_{start_date}_{end_date}.csv', 'w', newline='', encoding='utf-8') as csv_file:
                 csv_writer = csv.writer(csv_file)
-                csv_writer.writerow(['date', 'nominal', 'value', 'unitRate'])
+                csv_writer.writerow(['date', 'nominal', 'value', 'vunitRate'])
                 for row in data:
                     csv_writer.writerow(row)
         else:
@@ -68,8 +74,9 @@ def write_dataset(name_currency:str, start_date: str, end_date: str) -> None:
         print('Ошибка: Код валюты не найден!')
 
 def main():
+    check_repository(CURR_DIR, 'currency')
     get_ids_of_currency()
-    write_dataset('EUR', '01/01/1991', '31/12/2023') #USD
+    write_dataset('USD', '01/01/1991', '31/12/2023') #USD
 
 if __name__ == '__main__':
     main()
