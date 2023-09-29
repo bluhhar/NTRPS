@@ -29,35 +29,47 @@ def get_ids_of_currency() -> None:
             for row in data:
                 csv_writer.writerow(row)
 
-def write_dataset(name_currency:str, id_currency: str, start_date: str, end_date: str) -> None:
-    url = f"https://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={start_date}&date_req2={end_date}&VAL_NM_RQ={id_currency}"
-    response = requests.get(url, headers={'User-Agent':'Mozilla/5.0'})
-    #в отличии от json надо проверить всего лишь раз что страница существует, на ней и так будут все курсы валюты
-    if(response.status_code == 200):
-        xml_page = ET.fromstring(response.content)
-        
-        data = []
-        for tag in xml_page.findall('Record'):
-            date = datetime.strptime(tag.get('Date'), '%d.%m.%Y').strftime('%Y-%m-%d')
-            nominal = tag.find('Nominal').text
-            value = tag.find('Value').text.replace(',', '.')
-            vunit_Rate = tag.find('VunitRate').text.replace(',', '.')
+def get_currency_id(file_path: str, char_code: str) -> str:
+    with open(file_path, 'r', newline='', encoding='utf-8') as csv_file:
+        reader = csv.reader(csv_file)
+        next(reader)
+        for row in reader:
+            if row[2] == char_code:
+                return row[0]
+
+def write_dataset(name_currency:str, start_date: str, end_date: str) -> None:
+    id_currency = get_currency_id(CURR_DIR + '\ids_currency.csv', name_currency)
+    if id_currency:
+        url = f"https://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={start_date}&date_req2={end_date}&VAL_NM_RQ={id_currency}"
+        response = requests.get(url, headers={'User-Agent':'Mozilla/5.0'})
+        #в отличии от json надо проверить всего лишь раз что страница существует, на ней и так будут все курсы валюты
+        if(response.status_code == 200):
+            xml_page = ET.fromstring(response.content)
             
-            data.append([date, nominal, value, vunit_Rate])
-    
-        start_date = datetime.strptime(start_date, '%d/%m/%Y').strftime('%Y%m%d')
-        end_date= datetime.strptime(end_date, '%d/%m/%Y').strftime('%Y%m%d')
-        with open(CURR_DIR + f'\{name_currency}_{start_date}_{end_date}.csv', 'w', newline='', encoding='utf-8') as csv_file:
-            csv_writer = csv.writer(csv_file)
-            csv_writer.writerow(['date', 'nominal', 'value', 'unitRate'])
-            for row in data:
-                csv_writer.writerow(row)
+            data = []
+            for tag in xml_page.findall('Record'):
+                date = datetime.strptime(tag.get('Date'), '%d.%m.%Y').strftime('%Y-%m-%d')
+                nominal = tag.find('Nominal').text
+                value = tag.find('Value').text.replace(',', '.')
+                vunit_Rate = tag.find('VunitRate').text.replace(',', '.')
+                
+                data.append([date, nominal, value, vunit_Rate])
+        
+            start_date = datetime.strptime(start_date, '%d/%m/%Y').strftime('%Y%m%d')
+            end_date= datetime.strptime(end_date, '%d/%m/%Y').strftime('%Y%m%d')
+            with open(CURR_DIR + f'\{name_currency}_{start_date}_{end_date}.csv', 'w', newline='', encoding='utf-8') as csv_file:
+                csv_writer = csv.writer(csv_file)
+                csv_writer.writerow(['date', 'nominal', 'value', 'unitRate'])
+                for row in data:
+                    csv_writer.writerow(row)
+        else:
+            print('Ошибка: Дата указана неверно!')
     else:
-        print('Ошибка: Валюта или дата указаны неверно!')
+        print('Ошибка: Код валюты не найден!')
 
 def main():
     get_ids_of_currency()
-    write_dataset('USD', 'R01235', '01/01/1991', '31/12/2023') #USD
+    write_dataset('EUR', '01/01/1991', '31/12/2023') #USD
 
 if __name__ == '__main__':
     main()
