@@ -36,5 +36,5 @@ def main():
     write_dataset(start_date = datetime(2023, 8, 30), end_date = datetime.now())
     read_dataset()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
