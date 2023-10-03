@@ -4,14 +4,14 @@
 ```diff
 + Лабораторная работа №1
 + Лабораторная работа №2
-- Лабораторная работа №3
+! Лабораторная работа №3
 ```
 
 ### Установка
 ```shell
 git clone https://github.com/bluhhar/NTRPS
 python -m venv venv
-venv\Scripts\activate.batB
+venv\Scripts\activate.bat
 pip install -r requirements.txt
 ```
 <details>

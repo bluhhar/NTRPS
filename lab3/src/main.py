@@ -5,82 +5,25 @@ import csv
 import pandas as pd
 import xml.etree.ElementTree as ET
 
+import currency_handler as cur_h
+import directory_handler as dir_h
+import dataset_handler as dat_h
+import images_handler as img_h
+
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-CURR_DIR = os.path.dirname(os.path.abspath(__file__))
+CURR_DIR = dir_h.set_current_dir()
 
 IMAGES_FIELDS = ['date', 'file_name', 'url']
 CURRENCY_FIELDS = ['date', 'nominal', 'value', 'vunitRate']
 TEXT_FIELDS = ['date', ]
-
-def check_repository(dir: str, name: str) -> None:
-    dataset_directory = os.path.join(dir, name)
-    if not os.path.exists(dataset_directory):
-        os.makedirs(dataset_directory)
-    return dataset_directory
 
 def write_csv_file(path: str, data: list) -> None:
     mode = 'w' if not os.path.exists(path) else 'a'
     with open(path, mode, newline='') as csv_file:
       csv_writer = csv.writer(csv_file)
       csv_writer.writerow(data)
-
-def get_ids_of_currency() -> None:
-    url = 'http://www.cbr.ru/scripts/XML_daily.asp'
-    response = requests.get(url, headers={'User-Agent':'Mozilla/5.0'})
-    if(response.status_code == 200):
-        xml_page = ET.fromstring(response.content)
-
-        data = []
-        for tag in xml_page.findall('Valute'):
-            id = tag.get('ID')
-            num_code = tag.find('NumCode').text
-            char_code = tag.find('CharCode').text
-            currency_name = tag.find('Name').text
-
-            data.append([id, num_code, char_code, currency_name])
-
-        with open(CURR_DIR + f'/datasets/currency/ids_currency.csv', 'w', newline='', encoding='utf-8') as csv_file:
-            csv_writer = csv.writer(csv_file)
-            csv_writer.writerow(['id', 'num_code', 'char_code', 'currency_name'])
-            for row in data:
-                csv_writer.writerow(row)
-
-def get_currency_id(file_path: str, char_code: str) -> str:
-    df = pd.read_csv(file_path)
-    currency_id = df[df['char_code'] == char_code]['id'].values[0]
-    return currency_id
-
-def write_currency_dataset(name_currency:str, start_date: str, end_date: str) -> None:
-    id_currency = get_currency_id(CURR_DIR + '/datasets/currency/ids_currency.csv', name_currency)
-    if id_currency:
-        url = f"https://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={start_date}&date_req2={end_date}&VAL_NM_RQ={id_currency}"
-        response = requests.get(url, headers={'User-Agent':'Mozilla/5.0'})
-        #в отличии от json надо проверить всего лишь раз что страница существует, на ней и так будут все курсы валюты
-        if(response.status_code == 200):
-            xml_page = ET.fromstring(response.content)
-
-            data = []
-            for tag in xml_page.findall('Record'):
-                date = datetime.strptime(tag.get('Date'), '%d.%m.%Y').strftime('%Y-%m-%d')
-                nominal = tag.find('Nominal').text
-                value = tag.find('Value').text.replace(',', '.')
-                vunit_Rate = tag.find('VunitRate').text.replace(',', '.')
-
-                data.append([date, nominal, value, vunit_Rate])
-
-            start_date = datetime.strptime(start_date, '%d/%m/%Y').strftime('%Y%m%d')
-            end_date= datetime.strptime(end_date, '%d/%m/%Y').strftime('%Y%m%d')
-            with open(CURR_DIR + f'/datasets/currency/{name_currency}_{start_date}_{end_date}.csv', 'w', newline='', encoding='utf-8') as csv_file:
-                csv_writer = csv.writer(csv_file)
-                csv_writer.writerow(['date', 'nominal', 'value', 'vunitRate'])
-                for row in data:
-                    csv_writer.writerow(row)
-        else:
-            print('Ошибка: Дата указана неверно!')
-    else:
-        print('Ошибка: Код валюты не найден!')
 
 def parser_url(url: str) -> str:
     pattern = r'img_url=([^&]+)&text='
@@ -119,7 +62,7 @@ def download_image(url: str, save_path: str) -> bool:
     
 def download_images(query: str, num_images: int, mini_images: bool = False) -> None:
     pages = calc_pages(num_images)
-    class_folder = check_repository(CURR_DIR, f'datasets/images/{query}')
+    class_folder = dir_h.check_repository(CURR_DIR, f'datasets/images/{query}')
 
     downloaded_count = 0
 
@@ -185,9 +128,6 @@ def create_dataset_from_files(files: list, fields: list) -> pd.DataFrame:
             df = df._append(data, ignore_index=True)
         else:
             print(f'Ошибка: Файл {file} не содержит необходимых полей')
-        #FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
-        #df = df.append(data, ignore_index=True) --> менять на df = df.append(data)
-        #df = pd.concat(df_list, ignore_index=True) добавлять в данную строчку (просто раскомменитить)
     return df
 
 def rewrite_dates(df: pd.DataFrame, start_date: datetime) -> pd.DataFrame:
@@ -288,34 +228,34 @@ def test_images():
         print(item)
 
 def test_currency():
-    get_ids_of_currency()
-    write_currency_dataset('EUR', '01/01/1991', '31/12/2023') #USD
+    handler = cur_h.CurrencyHandler(CURR_DIR)
+    handler.get_currency_dataset('EUR', '01/01/1991', '31/12/2023') #USD
 
-    df = create_dataset_from_files([CURR_DIR + '/datasets/currency/EUR_19910101_20231231.csv'], CURRENCY_FIELDS)
-    separation_date_by_data(df)
-    separation_by_years(df)
-    separation_by_weeks(df)
+    #df = create_dataset_from_files([CURR_DIR + '/datasets/currency/EUR_19910101_20231231.csv'], CURRENCY_FIELDS)
+    #separation_date_by_data(df)
+    #separation_by_years(df)
+    #separation_by_weeks(df)
 
-    print('---Получение данных по определенной дате---')
-    print(get_data_from_date(df, datetime(2023, 1, 24)))
+    #print('---Получение данных по определенной дате---')
+    #print(get_data_from_date(df, datetime(2023, 1, 24)))
 
-    print('---Работа next()---')
-    for index in range(0, len(df)):
-        print(next(df, index))
+    #print('---Работа next()---')
+    #for index in range(0, len(df)):
+    #    print(next(df, index))
 
-    print('---Работа итератора---')
-    iterator = DataIterator(df)
-    for item in iterator:
-        print(item)
+    #print('---Работа итератора---')
+    #iterator = DataIterator(df)
+    #for item in iterator:
+    #    print(item)
 
 def check_repos():
-    check_repository(CURR_DIR, 'datasets')
-    check_repository(CURR_DIR, 'csv')
-    check_repository(CURR_DIR, 'csv/csv_date_by_data')
-    check_repository(CURR_DIR, 'csv/csv_years')
-    check_repository(CURR_DIR, 'csv/csv_weeks')
-    check_repository(CURR_DIR, 'datasets/images')
-    check_repository(CURR_DIR, 'datasets/currency')
+    dir_h.check_repository(CURR_DIR, 'datasets')
+    dir_h.check_repository(CURR_DIR, 'csv')
+    dir_h.check_repository(CURR_DIR, 'csv/csv_date_by_data')
+    dir_h.check_repository(CURR_DIR, 'csv/csv_years')
+    dir_h.check_repository(CURR_DIR, 'csv/csv_weeks')
+    dir_h.check_repository(CURR_DIR, 'datasets/images')
+    dir_h.check_repository(CURR_DIR, 'datasets/currency')
 
     #csv_files = print_csv_files_in_dir([CURR_DIR + '/datasets/images', CURR_DIR + '/datasets/currency'])
     #for file in csv_files:
@@ -324,7 +264,7 @@ def check_repos():
     #print_csv_dir_tree(CURR_DIR + '/datasets')
 
 def main():
-    #check_repos()
+    check_repos()
     #test_images()
     test_currency()
 
