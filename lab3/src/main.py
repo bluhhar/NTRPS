@@ -6,9 +6,12 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 
 import currency_handler as cur_h
-import directory_handler as dir_h
-import dataset_handler as dat_h
 import images_handler as img_h
+import dataset_handler as dat_h
+#from currency_handler import CurrencyHandler as cur_h
+#from dataset_handler import DatasetHandler as dat_h
+#from images_handler import ImagesHandler as img_h
+from directory_handler import DirectoryHandler as dir_h
 
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -32,30 +35,6 @@ def merge_data_with_date(file_csv_x: str = 'X.csv', file_csv_y: str = 'Y.csv') -
     merged_df = pd.merge(df_x, df_y, on='date', how='inner')
 
     return merged_df
-
-def check_dataset(df: pd.DataFrame, required_fields: list) -> bool:
-    for field in required_fields:
-        if field not in df.columns:
-            return False
-    return True
-
-def create_dataset_from_files(files: list, fields: list) -> pd.DataFrame:
-    df = pd.DataFrame()
-    for file in files:
-        data = pd.read_csv(file)
-        if check_dataset(data, fields):
-            data['date'] = pd.to_datetime(data['date'])
-            df = df._append(data, ignore_index=True)
-        else:
-            print(f'Ошибка: Файл {file} не содержит необходимых полей')
-    return df
-
-def rewrite_dates(df: pd.DataFrame, start_date: datetime) -> pd.DataFrame:
-    df['date'] = [start_date + pd.DateOffset(days=i) for i in range(len(df))]
-    return df
-
-def save_new_dataset(df: pd.DataFrame, file_to_save: str, index_custom: bool = False) -> None:
-    df.to_csv(file_to_save, index=index_custom)
 
 def print_csv_dir_tree(dir: str, file_extension: str = '.csv', tab: str = '') -> None:
     print(tab + os.path.basename(dir) + '/')
