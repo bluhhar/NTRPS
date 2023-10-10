@@ -65,7 +65,7 @@ class ImagesHandler:
         base_url = 'https:'
 
         csv_file_path = f'{self.CURR_DIR}/datasets/images/{query}_dataset.csv'
-        self.write_csv_file(csv_file_path, IMAGES_FIELDS)
+        #self.write_csv_file(csv_file_path, IMAGES_FIELDS)
         tag, tag_class, tag_source = self.get_html_tags(mini_images)
         #а вот это чтобы без движков было, грузим странички
         for page in range(0, pages):

@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 
 from datetime import datetime
@@ -26,3 +27,17 @@ class DatasetHandler:
 
     def save_new_dataset(self, df: pd.DataFrame, file_to_save: str, index_custom: bool = False) -> None:
         df.to_csv(file_to_save, index=index_custom)
+
+    def merge_data_with_date(self, file_csv_x: str = 'X.csv', file_csv_y: str = 'Y.csv') -> pd.DataFrame:
+        if not os.path.exists(file_csv_x) or not os.path.exists(file_csv_y):
+            return 'Ошибка: файла не существуют'
+
+        df_x = pd.read_csv(file_csv_x)
+        df_y = pd.read_csv(file_csv_y)
+
+        if 'date' not in df_x.columns or df_x.shape[1] != 1:
+            return 'Ошибка: Файл X.csv не содержит поле date'
+
+        merged_df = pd.merge(df_x, df_y, on='date', how='inner')
+
+        return merged_df
