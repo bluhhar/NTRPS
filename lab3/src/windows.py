@@ -1,4 +1,6 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QLineEdit
+import pandas as pd
+
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QLineEdit, QTableWidget, QTableWidgetItem, QHBoxLayout
 from PyQt6.QtCore import QDate
 
 from dataset_handler import DatasetHandler
@@ -11,50 +13,76 @@ CURRENCY_FIELDS = ['date', 'nominal', 'value', 'vunitRate']
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Operations with datasets")
+        self.setWindowTitle('Operations with datasets')
 
-        self.file_path = ""
-        self.df = ""
+        self.folder_path = ""
+        self.df = pd.DataFrame()
 
-        layout = QVBoxLayout()
+        v_layout = QVBoxLayout()
 
-        self.button = QPushButton("Выбор датасета")
-        self.button.clicked.connect(self.pick_file)
+        self.button = QPushButton('Выбор датасета')
+        self.button.clicked.connect(self.choose_dataset_from_file)
 
         self.date_input = QLineEdit()
-        self.date_input.setPlaceholderText("Введите дату")
+        self.date_input.setPlaceholderText('Введите дату')
 
-        self.search_button = QPushButton("Найти")
-        self.search_button.clicked.connect(self.search_date)
+        self.search_button = QPushButton('Получить данные')
+        self.search_button.clicked.connect(self.get_data_with_date)
 
-        layout.addWidget(self.button)
-        layout.addWidget(self.date_input)
-        layout.addWidget(self.search_button)
+        v_layout.addWidget(self.button)
+        v_layout.addWidget(self.date_input)
+        v_layout.addWidget(self.search_button)
+
+        
+        v_layout.addStretch(1) #чтобы кнопки не расплылись по форме от горизонтального слоя
+
+        self.table = QTableWidget()
+        
+        h_layout = QHBoxLayout()
+        h_layout.addLayout(v_layout)
+        h_layout.addWidget(self.table)
 
         container = QWidget()
-        container.setLayout(layout)
+        container.setLayout(h_layout)
 
         self.setCentralWidget(container)
 
-        self.pick_file()
+        self.choose_dataset_from_file()
 
 
-    def pick_file(self):
+    def choose_dataset_from_file(self):
         file_dialog = QFileDialog()
-        self.file_path = file_dialog.getOpenFileName()[0]
-        print(self.file_path)
-        self.df = dat_h.create_dataset_from_files([self.file_path], CURRENCY_FIELDS)
+        self.folder_path = file_dialog.getOpenFileName()[0]
+        print(self.folder_path)
+        self.df = dat_h.create_dataset_from_files([self.folder_path], CURRENCY_FIELDS)
+        self.update_table()
 
-    def search_date(self):
+    def get_data_with_date(self):
         date_str = self.date_input.text()
-        date = QDate.fromString(date_str, "dd.MM.yyyy")
+        date = QDate.fromString(date_str, 'dd.MM.yyyy')
         date_datetime = datetime(date.year(), date.month(), date.day())
-        dataset_operations = DatasetOperations(self.file_path)
+        dataset_operations = DatasetOperations(self.folder_path)
         print(dataset_operations.get_data_from_date(self.df, date_datetime))
 
+    def update_table(self):
+        if not self.df.empty:
+            self.table.setRowCount(len(self.df))
+            self.table.setColumnCount(len(self.df.columns))
+            self.table.setHorizontalHeaderLabels(self.df.columns)
+            for i in range(len(self.df)):
+                for j in range(len(self.df.columns)):
+                    self.table.setItem(i, j, QTableWidgetItem(str(self.df.iat[i, j])))
+            self.table.resizeColumnsToContents()
 
-app = QApplication([])
-window = MainWindow()
-window.show()
 
-app.exec()
+def main():
+    app = QApplication([])
+    window = MainWindow()
+    window.setMinimumWidth(700)
+    window.setMinimumHeight(700)
+    window.show()
+
+    app.exec()
+
+if __name__ == '__main__':
+    main()
