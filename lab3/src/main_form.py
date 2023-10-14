@@ -1,15 +1,18 @@
 import pandas as pd
 from datetime import datetime
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QLineEdit, QTableWidget, QTableWidgetItem, QHBoxLayout, QLabel, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QLineEdit, QTableWidget, QTableWidgetItem, QHBoxLayout, QLabel, QMessageBox, QComboBox
 from PyQt6.QtCore import QDate
 
 from dataset_handler import DatasetHandler
 from operations_dataset import DatasetOperations
 from directory_handler import DirectoryHandler as dir_h
 
+from form_images import ImageWindow
+
 dat_h = DatasetHandler()
 CURRENCY_FIELDS = ['date', 'nominal', 'value', 'vunitRate']
+IMAGES_FIELDS = ['date', 'file_name', 'url', 'path']
 
 CURR_DIR = dir_h.set_current_dir()
 
@@ -28,6 +31,10 @@ class MainWindow(QMainWindow):
         self.button_choose_dataset = QPushButton('Выбор датасета')
         self.button_choose_dataset.clicked.connect(self.choose_dataset_from_file)
 
+        self.combo_box_fields = QComboBox()
+        self.combo_box_fields.addItem("'date', 'nominal', 'value', 'vunitRate'")
+        self.combo_box_fields.addItem("'date', 'file_name', 'url', 'path'")
+
         self.textbox_date = QLineEdit()
         self.textbox_date.setPlaceholderText('Введите дату')
 
@@ -45,7 +52,11 @@ class MainWindow(QMainWindow):
         self.button_separation_by_weeks = QPushButton('... неделям')
         self.button_separation_by_weeks.clicked.connect(self.separation_by_weeks)
 
+        self.button_show_images = QPushButton('Просмотр картинок')
+        self.button_show_images.clicked.connect(self.show_form_images)
+
         v_layout.addWidget(self.button_choose_dataset)
+        v_layout.addWidget(self.combo_box_fields)
         v_layout.addWidget(self.textbox_date)
         v_layout.addWidget(self.button_search)
 
@@ -53,6 +64,7 @@ class MainWindow(QMainWindow):
         v_layout.addWidget(self.button_separation_date_by_data)
         v_layout.addWidget(self.button_separation_by_years)
         v_layout.addWidget(self.button_separation_by_weeks)
+        v_layout.addWidget(self.button_show_images)
 
         
         v_layout.addStretch(1) #чтобы кнопки не расплылись по форме от горизонтального слоя
@@ -74,8 +86,7 @@ class MainWindow(QMainWindow):
     def choose_dataset_from_file(self):
         file_dialog = QFileDialog()
         self.folder_path = file_dialog.getOpenFileName()[0]
-        print(self.folder_path)
-        self.df = dat_h.create_dataset_from_files([self.folder_path], CURRENCY_FIELDS)
+        self.df = dat_h.create_dataset_from_files([self.folder_path], CURRENCY_FIELDS)#self.combo_box_fields.currentText())#CURRENCY_FIELDS)
         self.update_table()
 
     def show_message_box(self, title, text):
@@ -122,6 +133,9 @@ class MainWindow(QMainWindow):
                     #self.table.setItem(i, j, QTableWidgetItem(str(self.df.iat[i, j])))
             self.table.resizeColumnsToContents()
 
+    def show_form_images(self):
+        self.image_window = ImageWindow(self.df)
+        self.image_window.show()
 
 def check_repos():
     dir_h.check_repository(CURR_DIR, 'datasets')
