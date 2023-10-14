@@ -1,7 +1,7 @@
 import pandas as pd
-import datetime
+from datetime import datetime
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QLineEdit, QTableWidget, QTableWidgetItem, QHBoxLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QLineEdit, QTableWidget, QTableWidgetItem, QHBoxLayout, QLabel, QMessageBox
 from PyQt6.QtCore import QDate
 
 from dataset_handler import DatasetHandler
@@ -29,9 +29,25 @@ class MainWindow(QMainWindow):
         self.button_search = QPushButton('Получить данные')
         self.button_search.clicked.connect(self.get_data_with_date)
 
+        self.label_separation_operations = QLabel('Разделение по ...')
+
+        self.button_separation_date_by_data = QPushButton('... даты от данных')
+        self.button_separation_date_by_data.clicked.connect(self.separation_date_by_data)
+
+        self.button_separation_by_years = QPushButton('... годам')
+        self.button_separation_by_years.clicked.connect(self.separation_by_years)
+
+        self.button_separation_by_weeks = QPushButton('... неделям')
+        self.button_separation_by_weeks.clicked.connect(self.separation_by_weeks)
+
         v_layout.addWidget(self.button_choose_dataset)
         v_layout.addWidget(self.textbox_date)
         v_layout.addWidget(self.button_search)
+
+        v_layout.addWidget(self.label_separation_operations)
+        v_layout.addWidget(self.button_separation_date_by_data)
+        v_layout.addWidget(self.button_separation_by_years)
+        v_layout.addWidget(self.button_separation_by_weeks)
 
         
         v_layout.addStretch(1) #чтобы кнопки не расплылись по форме от горизонтального слоя
@@ -62,7 +78,44 @@ class MainWindow(QMainWindow):
         date = QDate.fromString(date_str, 'dd.MM.yyyy')
         date_datetime = datetime(date.year(), date.month(), date.day())
         dataset_operations = DatasetOperations(self.folder_path)
-        print(dataset_operations.get_data_from_date(self.df, date_datetime))
+        #print(dataset_operations.get_data_from_date(self.df, date_datetime))
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText(str(dataset_operations.get_data_from_date(self.df, date_datetime)))
+        msg.setWindowTitle("Полученные данные по дате")
+        msg.exec()
+    
+    #пофиксить баг с датой
+    def separation_date_by_data(self):
+        dataset_operations = DatasetOperations(self.folder_path)
+        dataset_operations.separation_date_by_data(self.df)
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText('Данные отделены от даты')
+        msg.setWindowTitle("Данные от даты")
+        msg.exec()
+
+    def separation_by_years(self):
+        dataset_operations = DatasetOperations(self.folder_path)
+        dataset_operations.separation_by_years(self.df)   
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText('Данные разделены по годам')
+        msg.setWindowTitle("Разделение по годам")
+        msg.exec()
+
+    def separation_by_weeks(self):
+        dataset_operations = DatasetOperations(self.folder_path)
+        dataset_operations.separation_by_weeks(self.df)
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText('Данные разделены по неделям')
+        msg.setWindowTitle("Разделение по неделям")
+        msg.exec()
 
     def update_table(self):
         if not self.df.empty:
