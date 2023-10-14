@@ -7,8 +7,8 @@ class DatasetOperations:
         self.CURR_DIR = curr_dir
 
     def separation_date_by_data(self, df: pd.DataFrame) -> None:
-        df_date = df['date']
-        df_data = df.drop('date', axis=1)
+        df_date = pd.to_datetime(df['date'])
+        df_data = df.drop('date', axis = 1)
 
         df_date.to_csv(self.CURR_DIR + '/csv/csv_date_by_data/X.csv', index=False)
         df_data.to_csv(self.CURR_DIR + '/csv/csv_date_by_data/Y.csv', index=False)

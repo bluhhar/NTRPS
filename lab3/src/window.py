@@ -6,9 +6,12 @@ from PyQt6.QtCore import QDate
 
 from dataset_handler import DatasetHandler
 from operations_dataset import DatasetOperations
+from directory_handler import DirectoryHandler as dir_h
 
 dat_h = DatasetHandler()
 CURRENCY_FIELDS = ['date', 'nominal', 'value', 'vunitRate']
+
+CURR_DIR = dir_h.set_current_dir()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -17,6 +20,8 @@ class MainWindow(QMainWindow):
 
         self.folder_path = ""
         self.df = pd.DataFrame()
+
+        self.dataset_operations = DatasetOperations(CURR_DIR)
 
         v_layout = QVBoxLayout()
 
@@ -73,49 +78,31 @@ class MainWindow(QMainWindow):
         self.df = dat_h.create_dataset_from_files([self.folder_path], CURRENCY_FIELDS)
         self.update_table()
 
+    def show_message_box(self, title, text):
+        message_box = QMessageBox()
+        message_box.setIcon(QMessageBox.Icon.Information)
+        message_box.setText(text)
+        message_box.setWindowTitle(title)
+        message_box.exec()
+
     def get_data_with_date(self):
         date_str = self.textbox_date.text()
         date = QDate.fromString(date_str, 'dd.MM.yyyy')
         date_datetime = datetime(date.year(), date.month(), date.day())
-        dataset_operations = DatasetOperations(self.folder_path)
-        #print(dataset_operations.get_data_from_date(self.df, date_datetime))
+        data = self.dataset_operations.get_data_from_date(self.df, date_datetime)
+        self.show_message_box("Полученные данные по дате", str(data))
 
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Information)
-        msg.setText(str(dataset_operations.get_data_from_date(self.df, date_datetime)))
-        msg.setWindowTitle("Полученные данные по дате")
-        msg.exec()
-    
-    #пофиксить баг с датой
     def separation_date_by_data(self):
-        dataset_operations = DatasetOperations(self.folder_path)
-        dataset_operations.separation_date_by_data(self.df)
-
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Information)
-        msg.setText('Данные отделены от даты')
-        msg.setWindowTitle("Данные от даты")
-        msg.exec()
+        self.dataset_operations.separation_date_by_data(self.df)
+        self.show_message_box("Данные от даты", 'Данные отделены от даты')
 
     def separation_by_years(self):
-        dataset_operations = DatasetOperations(self.folder_path)
-        dataset_operations.separation_by_years(self.df)   
-
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Information)
-        msg.setText('Данные разделены по годам')
-        msg.setWindowTitle("Разделение по годам")
-        msg.exec()
+        self.dataset_operations.separation_by_years(self.df)   
+        self.show_message_box("Разделение по годам", 'Данные разделены по годам')
 
     def separation_by_weeks(self):
-        dataset_operations = DatasetOperations(self.folder_path)
-        dataset_operations.separation_by_weeks(self.df)
-
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Information)
-        msg.setText('Данные разделены по неделям')
-        msg.setWindowTitle("Разделение по неделям")
-        msg.exec()
+        self.dataset_operations.separation_by_weeks(self.df)
+        self.show_message_box("Разделение по неделям", 'Данные разделены по неделям')
 
     def update_table(self):
         if not self.df.empty:
@@ -124,11 +111,29 @@ class MainWindow(QMainWindow):
             self.table.setHorizontalHeaderLabels(self.df.columns)
             for i in range(len(self.df)):
                 for j in range(len(self.df.columns)):
-                    self.table.setItem(i, j, QTableWidgetItem(str(self.df.iat[i, j])))
+                    item = self.df.iat[i, j]
+                    if j == 0: #'date'
+                        date_str = item.strftime('%Y-%m-%d')
+                        date = QDate.fromString(date_str, 'yyyy-MM-dd')
+                        item_str = date.toString('yyyy-MM-dd')
+                    else:
+                        item_str = str(item)
+                    self.table.setItem(i, j, QTableWidgetItem(item_str))
+                    #self.table.setItem(i, j, QTableWidgetItem(str(self.df.iat[i, j])))
             self.table.resizeColumnsToContents()
 
 
+def check_repos():
+    dir_h.check_repository(CURR_DIR, 'datasets')
+    dir_h.check_repository(CURR_DIR, 'csv')
+    dir_h.check_repository(CURR_DIR, 'csv/csv_date_by_data')
+    dir_h.check_repository(CURR_DIR, 'csv/csv_years')
+    dir_h.check_repository(CURR_DIR, 'csv/csv_weeks')
+    dir_h.check_repository(CURR_DIR, 'datasets/images')
+    dir_h.check_repository(CURR_DIR, 'datasets/currency')
+
 def main():
+    check_repos()
     app = QApplication([])
     window = MainWindow()
     window.setMinimumWidth(700)

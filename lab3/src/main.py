@@ -49,12 +49,12 @@ def test_currency():
     df = dat_h.create_dataset_from_files([CURR_DIR + '/datasets/currency/EUR_19910101_20231231.csv'], CURRENCY_FIELDS)
 
     dataset_operations = DatasetOperations(CURR_DIR)
-    #dataset_operations.separation_date_by_data(df)
+    dataset_operations.separation_date_by_data(df)
     #dataset_operations.separation_by_years(df)
     #dataset_operations.separation_by_weeks(df)
 
-    print('---Получение данных по определенной дате---')
-    print(dataset_operations.get_data_from_date(df, datetime(2023, 1, 24)))
+    #print('---Получение данных по определенной дате---')
+    #print(dataset_operations.get_data_from_date(df, datetime(2023, 1, 24)))
 
     #print('---Работа next()---')
     #for index in range(0, len(df)):
@@ -82,8 +82,8 @@ def check_repos():
 
 def main():
     check_repos()
-    test_images()
-    #test_currency()
+    #test_images()
+    test_currency()
 
 if __name__ == '__main__':
     main()

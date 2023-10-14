@@ -6,6 +6,8 @@ from PyQt6.QtGui import QPixmap
 class ImageWindow(QWidget):
     def __init__(self, df):
         super().__init__()
+        
+        self.setWindowTitle('View kartinki')
 
         self.label_image = QLabel()
 
