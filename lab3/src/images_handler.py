@@ -9,7 +9,7 @@ from directory_handler import DirectoryHandler as dir_h
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-IMAGES_FIELDS = ['date', 'file_name', 'url']
+IMAGES_FIELDS = ['date', 'file_name', 'url', 'path']
 
 class ImagesHandler:
     def __init__(self, curr_dir):
@@ -58,14 +58,14 @@ class ImagesHandler:
         
     def download_images(self, query: str, num_images: int, mini_images: bool = False) -> None:
         pages = self.calc_pages(num_images)
-        class_folder = dir_h.check_repository(self.CURR_DIR, f'datasets/images/{query}')
+        class_folder = dir_h.check_repository(self.CURR_DIR, f'datasets\images\{query}')
 
         downloaded_count = 0
 
         base_url = 'https:'
 
         csv_file_path = f'{self.CURR_DIR}/datasets/images/{query}_dataset.csv'
-        #self.write_csv_file(csv_file_path, IMAGES_FIELDS)
+        self.write_csv_file(csv_file_path, IMAGES_FIELDS)
         tag, tag_class, tag_source = self.get_html_tags(mini_images)
         #а вот это чтобы без движков было, грузим странички
         for page in range(0, pages):
@@ -84,13 +84,13 @@ class ImagesHandler:
                         img_url = self.parser_url(img_url)
 
                     #csv_image_filename = image_filename
-                    image_filename = f'{downloaded_count:04d}.jpg'
+                    image_filename = f'{query}_{downloaded_count:04d}.jpg'
                     image_path = os.path.join(class_folder, image_filename)
                     if(self.download_image(img_url, image_path)):
                         downloaded_count += 1
                         print(f'Загружено изображений для {query}: {downloaded_count}/{num_images}')
 
-                        self.write_csv_file(csv_file_path, [datetime.now().strftime('%Y-%m-%d'), image_filename, img_url])
+                        self.write_csv_file(csv_file_path, [datetime.now().strftime('%Y-%m-%d'), image_filename, img_url, image_path])
 
                     if(downloaded_count >= num_images):
                         break

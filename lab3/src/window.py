@@ -1,11 +1,11 @@
 import pandas as pd
+import datetime
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QLineEdit, QTableWidget, QTableWidgetItem, QHBoxLayout
 from PyQt6.QtCore import QDate
 
 from dataset_handler import DatasetHandler
 from operations_dataset import DatasetOperations
-from datetime import datetime
 
 dat_h = DatasetHandler()
 CURRENCY_FIELDS = ['date', 'nominal', 'value', 'vunitRate']
@@ -20,18 +20,18 @@ class MainWindow(QMainWindow):
 
         v_layout = QVBoxLayout()
 
-        self.button = QPushButton('Выбор датасета')
-        self.button.clicked.connect(self.choose_dataset_from_file)
+        self.button_choose_dataset = QPushButton('Выбор датасета')
+        self.button_choose_dataset.clicked.connect(self.choose_dataset_from_file)
 
-        self.date_input = QLineEdit()
-        self.date_input.setPlaceholderText('Введите дату')
+        self.textbox_date = QLineEdit()
+        self.textbox_date.setPlaceholderText('Введите дату')
 
-        self.search_button = QPushButton('Получить данные')
-        self.search_button.clicked.connect(self.get_data_with_date)
+        self.button_search = QPushButton('Получить данные')
+        self.button_search.clicked.connect(self.get_data_with_date)
 
-        v_layout.addWidget(self.button)
-        v_layout.addWidget(self.date_input)
-        v_layout.addWidget(self.search_button)
+        v_layout.addWidget(self.button_choose_dataset)
+        v_layout.addWidget(self.textbox_date)
+        v_layout.addWidget(self.button_search)
 
         
         v_layout.addStretch(1) #чтобы кнопки не расплылись по форме от горизонтального слоя
@@ -58,7 +58,7 @@ class MainWindow(QMainWindow):
         self.update_table()
 
     def get_data_with_date(self):
-        date_str = self.date_input.text()
+        date_str = self.textbox_date.text()
         date = QDate.fromString(date_str, 'dd.MM.yyyy')
         date_datetime = datetime(date.year(), date.month(), date.day())
         dataset_operations = DatasetOperations(self.folder_path)
