@@ -9,8 +9,8 @@ from operations_dataset import DatasetOperations
 from directory_handler import DirectoryHandler as dir_h
 
 from form_images import ImageWindow
+from form_currency import CurrencyWindow
 
-dat_h = DatasetHandler()
 CURRENCY_FIELDS = ['date', 'nominal', 'value', 'vunitRate']
 IMAGES_FIELDS = ['date', 'file_name', 'url', 'path']
 
@@ -19,13 +19,17 @@ CURR_DIR = dir_h.set_current_dir()
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Operations with datasets')
 
         self.folder_path = ""
         self.df = pd.DataFrame()
 
         self.dataset_operations = DatasetOperations(CURR_DIR)
+        
+        self.init_ui()
+        self.choose_dataset_from_file()
 
+    def init_ui(self):
+        self.setWindowTitle('Операции с датасетом')
         v_layout = QVBoxLayout()
 
         self.button_choose_dataset = QPushButton('Выбор датасета')
@@ -52,8 +56,8 @@ class MainWindow(QMainWindow):
         self.button_separation_by_weeks = QPushButton('... неделям')
         self.button_separation_by_weeks.clicked.connect(self.separation_by_weeks)
 
-        self.button_show_images = QPushButton('Просмотр картинок')
-        self.button_show_images.clicked.connect(self.show_form_images)
+        self.button_show_images = QPushButton('Просмотр данных')
+        self.button_show_images.clicked.connect(self.show_form_data)
 
         v_layout.addWidget(self.button_choose_dataset)
         v_layout.addWidget(self.combo_box_fields)
@@ -65,7 +69,6 @@ class MainWindow(QMainWindow):
         v_layout.addWidget(self.button_separation_by_years)
         v_layout.addWidget(self.button_separation_by_weeks)
         v_layout.addWidget(self.button_show_images)
-
         
         v_layout.addStretch(1) #чтобы кнопки не расплылись по форме от горизонтального слоя
 
@@ -80,16 +83,27 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(container)
 
-        self.choose_dataset_from_file()
-
+    def split_fields(self, text: str) -> str:
+        text = text.replace("'", "")
+        res = text.split(", ")
+        return res
 
     def choose_dataset_from_file(self):
-        file_dialog = QFileDialog()
-        self.folder_path = file_dialog.getOpenFileName()[0]
-        self.df = dat_h.create_dataset_from_files([self.folder_path], CURRENCY_FIELDS)#self.combo_box_fields.currentText())#CURRENCY_FIELDS)
-        self.update_table()
+        try:
+            dat_h = DatasetHandler()
+            file_dialog = QFileDialog()
+            self.folder_path = file_dialog.getOpenFileName()[0]
+            if(self.df is None or self.df.empty):
+                self.df = dat_h.create_dataset([self.folder_path])
+                self.current_fields = self.df.columns.tolist()
+            else:
+                self.df = dat_h.create_dataset_from_files([self.folder_path], self.split_fields(self.combo_box_fields.currentText()))#self.combo_box_fields.currentText())
+            self.update_table()
+        except Exception as e:
+            self.show_message_box("Ошибка", str(e))
 
-    def show_message_box(self, title, text):
+
+    def show_message_box(self, title: str, text: str):
         message_box = QMessageBox()
         message_box.setIcon(QMessageBox.Icon.Information)
         message_box.setText(text)
@@ -105,15 +119,15 @@ class MainWindow(QMainWindow):
 
     def separation_date_by_data(self):
         self.dataset_operations.separation_date_by_data(self.df)
-        self.show_message_box("Данные от даты", 'Данные отделены от даты')
+        self.show_message_box("Успех", 'Данные отделены от даты')
 
     def separation_by_years(self):
         self.dataset_operations.separation_by_years(self.df)   
-        self.show_message_box("Разделение по годам", 'Данные разделены по годам')
+        self.show_message_box("Успех", 'Данные разделены по годам')
 
     def separation_by_weeks(self):
         self.dataset_operations.separation_by_weeks(self.df)
-        self.show_message_box("Разделение по неделям", 'Данные разделены по неделям')
+        self.show_message_box("Успех", 'Данные разделены по неделям')
 
     def update_table(self):
         if not self.df.empty:
@@ -133,9 +147,13 @@ class MainWindow(QMainWindow):
                     #self.table.setItem(i, j, QTableWidgetItem(str(self.df.iat[i, j])))
             self.table.resizeColumnsToContents()
 
-    def show_form_images(self):
-        self.image_window = ImageWindow(self.df)
-        self.image_window.show()
+    def show_form_data(self):
+        if(self.current_fields == self.split_fields("'date', 'nominal', 'value', 'vunitRate'")):
+            self.currency_window = CurrencyWindow(self.df)
+            self.currency_window.show()
+        elif(self.current_fields == self.split_fields("'date', 'file_name', 'url', 'path'")):
+            self.image_window = ImageWindow(self.df)
+            self.image_window.show() #пофиксить баг когда timestamp наследует тип от currency для images currency -> images
 
 def check_repos():
     dir_h.check_repository(CURR_DIR, 'datasets')

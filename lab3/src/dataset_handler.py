@@ -18,7 +18,16 @@ class DatasetHandler:
                 data['date'] = pd.to_datetime(data['date'])
                 df = df._append(data, ignore_index=True)
             else:
-                print(f'Ошибка: Файл {file} не содержит необходимых полей')
+                raise Exception(f'Ошибка: Файл {file} не содержит необходимых полей')
+                #print(f'Ошибка: Файл {file} не содержит необходимых полей')
+        return df
+    
+    def create_dataset(self, files: list) -> pd.DataFrame:
+        df = pd.DataFrame()
+        for file in files:
+            data = pd.read_csv(file)
+            data['date'] = pd.to_datetime(data['date'])
+            df = df._append(data, ignore_index=True)
         return df
 
     def rewrite_dates(self, df: pd.DataFrame, start_date: datetime) -> pd.DataFrame:
@@ -30,13 +39,16 @@ class DatasetHandler:
 
     def merge_data_with_date(self, file_csv_x: str = 'X.csv', file_csv_y: str = 'Y.csv') -> pd.DataFrame:
         if not os.path.exists(file_csv_x) or not os.path.exists(file_csv_y):
-            return 'Ошибка: файла не существуют'
+            #return 'Ошибка: файла не существуют'
+            raise Exception('Ошибка: файла не существуют')
 
         df_x = pd.read_csv(file_csv_x)
         df_y = pd.read_csv(file_csv_y)
 
         if 'date' not in df_x.columns or df_x.shape[1] != 1:
-            return 'Ошибка: Файл X.csv не содержит поле date'
+            #return 'Ошибка: Файл X.csv не содержит поле date'
+            raise Exception('Ошибка: Файл X.csv не содержит поле date')
+
 
         merged_df = pd.merge(df_x, df_y, on='date', how='inner')
 
