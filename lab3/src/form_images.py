@@ -1,6 +1,6 @@
 import pandas as pd
 
-from PyQt6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QApplication, QWidget
+from PyQt6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
 from PyQt6.QtGui import QPixmap
 
 class ImageWindow(QWidget):

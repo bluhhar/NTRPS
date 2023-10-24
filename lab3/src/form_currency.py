@@ -1,15 +1,13 @@
 import pandas as pd
 
-from PyQt6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QApplication, QWidget
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
+
 
 class CurrencyWindow(QWidget):
     def __init__(self, df):
         super().__init__()
         
         self.setWindowTitle('Просмотр данных')
-
-        self.label_image = QLabel()
 
         self.label_name = QLabel()
 
@@ -19,7 +17,6 @@ class CurrencyWindow(QWidget):
         self.button_next.clicked.connect(self.next_currency)
 
         v_layout = QVBoxLayout()
-        v_layout.addWidget(self.label_image)
         v_layout.addWidget(self.label_name)
         v_layout.addWidget(self.button_next)
 
@@ -29,7 +26,6 @@ class CurrencyWindow(QWidget):
     def next_currency(self):
         try:
             data = next(self.iterator)
-            #data_label = QLabel(str(data))
             self.label_name.setText(str(data))
         except StopIteration:
             pass

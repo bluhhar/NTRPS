@@ -98,6 +98,7 @@ class MainWindow(QMainWindow):
                 self.current_fields = self.df.columns.tolist()
             else:
                 self.df = dat_h.create_dataset_from_files([self.folder_path], self.split_fields(self.combo_box_fields.currentText()))#self.combo_box_fields.currentText())
+                self.current_fields = self.df.columns.tolist()
             self.update_table()
         except Exception as e:
             self.show_message_box("Ошибка", str(e))
