@@ -154,7 +154,7 @@ class MainWindow(QMainWindow):
             self.currency_window.show()
         elif(self.current_fields == self.split_fields("'date', 'file_name', 'url', 'path'")):
             self.image_window = ImageWindow(self.df)
-            self.image_window.show() #пофиксить баг когда timestamp наследует тип от currency для images currency -> images
+            self.image_window.show()
 
 def check_repos():
     dir_h.check_repository(CURR_DIR, 'datasets')

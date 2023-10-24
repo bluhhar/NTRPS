@@ -2,7 +2,6 @@ import pandas as pd
 
 from PyQt6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
 
-
 class CurrencyWindow(QWidget):
     def __init__(self, df):
         super().__init__()
