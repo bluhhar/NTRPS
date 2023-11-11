@@ -1,6 +1,7 @@
 import pandas as pd
 import io
 import re
+import matplotlib.pyplot as plt
 
 from datetime import datetime
 
@@ -81,9 +82,41 @@ class MainWindow(QMainWindow):
         self.button_rename_columns = QPushButton('Переименовать колонки')
         self.button_rename_columns.clicked.connect(self.rename_columns)
 
+        self.button_check_null_fields = QPushButton('Проверка на NaN')
+        self.button_check_null_fields.clicked.connect(self.check_null_fields)
+        
+        self.button_median_mean = QPushButton('Медианы и средний')
+        self.button_median_mean.clicked.connect(self.median_mean)
+
+        self.button_describe_dataset = QPushButton('Статистическая информация')
+        self.button_describe_dataset.clicked.connect(self.describe_dataset)
+
+        self.label_graphs = QLabel('Графики датасета')
+
+        self.button_show_deviation_graph = QPushButton('График отклонения')
+        self.button_show_deviation_graph.clicked.connect(self.show_deviation_graph)
+
+        self.button_show_date_graph = QPushButton('График изменения курса')
+        self.button_show_date_graph.clicked.connect(self.show_date_graph)
+
+        self.button_show_month_of_years_graph = QPushButton('График изменения курса по месяцам')
+        self.button_show_month_of_years_graph.clicked.connect(self.show_month_of_years_graph)
+
+        self.button_show_year_month_graph = QPushButton('График изменения курса в месяц и год')
+        self.button_show_year_month_graph.clicked.connect(self.show_year_month_graph)
+
         v_layout.addWidget(self.label_info_dataset)
         v_layout.addWidget(self.button_info_of_dataset)
         v_layout.addWidget(self.button_rename_columns)
+        v_layout.addWidget(self.button_check_null_fields)
+        v_layout.addWidget(self.button_median_mean)
+        v_layout.addWidget(self.button_describe_dataset)
+
+        v_layout.addWidget(self.label_graphs)
+        v_layout.addWidget(self.button_show_deviation_graph)
+        v_layout.addWidget(self.button_show_date_graph)
+        v_layout.addWidget(self.button_show_month_of_years_graph)
+        v_layout.addWidget(self.button_show_year_month_graph)
 
         v_layout.addStretch(1) #чтобы кнопки не расплылись по форме от горизонтального слоя
 
@@ -177,9 +210,92 @@ class MainWindow(QMainWindow):
         s = buf.getvalue()
         self.show_message_box("Информация о датасете", s)
 
+    #добавить универсальный метод для переименование vunitRate и перевод в нижний ренгистр .lower()
     def rename_columns(self):
         self.df.columns = ['date', 'nominal', 'value', 'vunit_rate']
         self.update_table()
+
+    def check_null_fields(self):
+        s = self.df.isnull().sum()
+        self.show_message_box("Проверка на NaN Null", str(s))
+
+    #TODO: заполнение Nan Null полей
+
+    def median_mean(self):
+        median_value = self.df['vunit_rate'].median()
+        mean_value = self.df['vunit_rate'].mean()
+
+        self.df['deviation_from_median'] = self.df['vunit_rate'] - median_value
+        self.df['deviation_from_mean'] = self.df['vunit_rate'] - mean_value
+
+        self.update_table()
+
+    def describe_dataset(self):
+        s = self.df[['vunit_rate', 'deviation_from_median', 'deviation_from_mean']].describe()
+        self.show_message_box('Статистическая информация', str(s))
+
+    def show_deviation_graph(self):
+        plt.figure(figsize=(12, 6))
+        plt.boxplot([self.df['vunit_rate'], self.df['deviation_from_median'], self.df['deviation_from_mean']], labels=['vunit_rate', 'deviation_from_median', 'deviation_from_mean'])
+        plt.title('График vunit_rate и отклонений')
+        plt.show()
+
+    def show_date_graph(self):
+        self.df['date'] = pd.to_datetime(self.df['date'])
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(self.df['date'], self.df['vunit_rate'])
+
+        plt.title('Изменение курса за весь период')
+        plt.xlabel('Дата')
+        plt.ylabel('Курс')
+
+        plt.show()
+
+    def plot_rate_month(self, month):
+        df_month = self.df[self.df['date'].dt.month == month]
+
+        median_value = df_month['vunit_rate'].median()
+        mean_value = df_month['vunit_rate'].mean()
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(df_month['date'], df_month['vunit_rate'], label='Курс')
+        plt.axhline(median_value, color='r', linestyle='--', label='Медиана')
+        plt.axhline(mean_value, color='g', linestyle=':', label='Среднее значение')
+
+        plt.title('Изменение курса за месяц')
+        plt.xlabel('Дата')
+        plt.ylabel('Курс')
+        plt.legend()
+
+        plt.show()
+    
+    #TODO: сделать тектовое поле для ввода
+    def show_month_of_years_graph(self):
+        self.plot_rate_month(12)
+
+    def plot_rate_year_month(self, year, month):
+        df_year = self.df[(self.df['date'].dt.year == year) & (self.df['date'].dt.month == month)]
+
+        median_value = df_year['vunit_rate'].median()
+        mean_value = df_year['vunit_rate'].mean()
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(df_year['date'], df_year['vunit_rate'], label='Курс')
+        plt.axhline(median_value, color='r', linestyle='--', label='Медиана')
+        plt.axhline(mean_value, color='g', linestyle=':', label='Среднее значение')
+
+        plt.title('Изменение курса за месяц')
+        plt.xlabel('Дата')
+        plt.ylabel('Курс')
+        plt.legend()
+
+        plt.show()
+
+    #TODO: сделать тектовое поле для ввода
+    def show_year_month_graph(self):
+        self.plot_rate_year_month(2012, 12)
+
 
 def check_repos():
     dir_h.check_repository(CURR_DIR, 'datasets')
