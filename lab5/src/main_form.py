@@ -211,16 +211,19 @@ class MainWindow(QMainWindow):
         s = buf.getvalue()
         self.show_message_box('Информация о датасете', s)
 
-    #добавить универсальный метод для переименование vunitRate и перевод в нижний ренгистр .lower()
+    def convert_to_snake_case(self, s):
+        return ''.join(['_' + i.lower() if i.isupper() else i for i in s]).lstrip('_')
+
     def rename_columns(self):
-        self.df.columns = ['date', 'nominal', 'value', 'vunit_rate']
+        self.df.columns = [self.convert_to_snake_case(col) for col in self.df.columns]
         self.update_table()
 
     def check_null_fields(self):
         s = self.df.isnull().sum()
+        self.df.ffill(inplace=True)
+        self.df.bfill(inplace=True)
+        self.update_table()
         self.show_message_box('Проверка на NaN Null', str(s))
-
-    #TODO: заполнение Nan Null полей
 
     def median_mean(self):
         median_value = self.df['vunit_rate'].median()
@@ -266,59 +269,33 @@ class MainWindow(QMainWindow):
         else:
             self.show_message_box('Ошибка', 'Дата введена неправильно! Пример ввода <месяц>, <год>, <месяц год>')
 
+    def plot_rate(self, df, title):
+        median_value = df['vunit_rate'].median()
+        mean_value = df['vunit_rate'].mean()
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(df['date'], df['vunit_rate'], label='Курс')
+        plt.axhline(median_value, color='r', linestyle='--', label='Медиана')
+        plt.axhline(mean_value, color='g', linestyle=':', label='Среднее значение')
+
+        plt.title(title)
+        plt.xlabel('Дата')
+        plt.ylabel('Курс')
+        plt.legend()
+
+        plt.show()
+
     def plot_rate_month(self, month):
         df_month = self.df[self.df['date'].dt.month == month]
-
-        median_value = df_month['vunit_rate'].median()
-        mean_value = df_month['vunit_rate'].mean()
-
-        plt.figure(figsize=(10, 6))
-        plt.plot(df_month['date'], df_month['vunit_rate'], label='Курс')
-        plt.axhline(median_value, color='r', linestyle='--', label='Медиана')
-        plt.axhline(mean_value, color='g', linestyle=':', label='Среднее значение')
-
-        plt.title(f'Изменение курса за {month} месяц')
-        plt.xlabel('Дата')
-        plt.ylabel('Курс')
-        plt.legend()
-
-        plt.show()
+        self.plot_rate(df_month, f'Изменение курса за {month} месяц')
 
     def plot_rate_year(self, year):
-        df_month = self.df[self.df['date'].dt.year == year]
-
-        median_value = df_month['vunit_rate'].median()
-        mean_value = df_month['vunit_rate'].mean()
-
-        plt.figure(figsize=(10, 6))
-        plt.plot(df_month['date'], df_month['vunit_rate'], label='Курс')
-        plt.axhline(median_value, color='r', linestyle='--', label='Медиана')
-        plt.axhline(mean_value, color='g', linestyle=':', label='Среднее значение')
-
-        plt.title(f'Изменение курса за {year} год')
-        plt.xlabel('Дата')
-        plt.ylabel('Курс')
-        plt.legend()
-
-        plt.show()
+        df_year = self.df[self.df['date'].dt.year == year]
+        self.plot_rate(df_year, f'Изменение курса за {year} год')
 
     def plot_rate_year_month(self, year, month):
-        df_year = self.df[(self.df['date'].dt.year == year) & (self.df['date'].dt.month == month)]
-
-        median_value = df_year['vunit_rate'].median()
-        mean_value = df_year['vunit_rate'].mean()
-
-        plt.figure(figsize=(10, 6))
-        plt.plot(df_year['date'], df_year['vunit_rate'], label='Курс')
-        plt.axhline(median_value, color='r', linestyle='--', label='Медиана')
-        plt.axhline(mean_value, color='g', linestyle=':', label='Среднее значение')
-
-        plt.title(f'Изменение курса за {month} месяц в {year} год')
-        plt.xlabel('Дата')
-        plt.ylabel('Курс')
-        plt.legend()
-
-        plt.show()
+        df_year_month = self.df[(self.df['date'].dt.year == year) & (self.df['date'].dt.month == month)]
+        self.plot_rate(df_year_month, f'Изменение курса за {month} месяц в {year} год')
 
 def check_repos():
     dir_h.check_repository(CURR_DIR, 'datasets')
