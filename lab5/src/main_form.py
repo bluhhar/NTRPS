@@ -14,6 +14,7 @@ from directory_handler import DirectoryHandler as dir_h
 
 from form_images import ImageWindow
 from form_currency import CurrencyWindow
+from form_choose_date import PlotChooseDateForm
 
 CURRENCY_FIELDS = ['date', 'nominal', 'value', 'vunitRate']
 IMAGES_FIELDS = ['date', 'file_name', 'url', 'path']
@@ -99,11 +100,11 @@ class MainWindow(QMainWindow):
         self.button_show_date_graph = QPushButton('График изменения курса')
         self.button_show_date_graph.clicked.connect(self.show_date_graph)
 
-        self.button_show_month_of_years_graph = QPushButton('График изменения курса по месяцам')
-        self.button_show_month_of_years_graph.clicked.connect(self.show_month_of_years_graph)
+        self.textbox_date_graph = QLineEdit()
+        self.textbox_date_graph.setPlaceholderText('Введите дату')
 
-        self.button_show_year_month_graph = QPushButton('График изменения курса в месяц и год')
-        self.button_show_year_month_graph.clicked.connect(self.show_year_month_graph)
+        self.button_show_graph_by_date = QPushButton('График изменения курса по дате')
+        self.button_show_graph_by_date.clicked.connect(self.show_graph_by_date)
 
         v_layout.addWidget(self.label_info_dataset)
         v_layout.addWidget(self.button_info_of_dataset)
@@ -115,8 +116,8 @@ class MainWindow(QMainWindow):
         v_layout.addWidget(self.label_graphs)
         v_layout.addWidget(self.button_show_deviation_graph)
         v_layout.addWidget(self.button_show_date_graph)
-        v_layout.addWidget(self.button_show_month_of_years_graph)
-        v_layout.addWidget(self.button_show_year_month_graph)
+        v_layout.addWidget(self.textbox_date_graph)
+        v_layout.addWidget(self.button_show_graph_by_date)
 
         v_layout.addStretch(1) #чтобы кнопки не расплылись по форме от горизонтального слоя
 
@@ -149,7 +150,7 @@ class MainWindow(QMainWindow):
                 self.current_fields = self.df.columns.tolist()
             self.update_table()
         except Exception as e:
-            self.show_message_box("Ошибка", str(e))
+            self.show_message_box('Ошибка', str(e))
 
 
     def show_message_box(self, title: str, text: str):
@@ -164,19 +165,19 @@ class MainWindow(QMainWindow):
         date = QDate.fromString(date_str, 'dd.MM.yyyy')
         date_datetime = datetime(date.year(), date.month(), date.day())
         data = self.dataset_operations.get_data_from_date(self.df, date_datetime)
-        self.show_message_box("Полученные данные по дате", str(data))
+        self.show_message_box('Полученные данные по дате', str(data))
 
     def separation_date_by_data(self):
         self.dataset_operations.separation_date_by_data(self.df)
-        self.show_message_box("Успех", 'Данные отделены от даты')
+        self.show_message_box('Успех', 'Данные отделены от даты')
 
     def separation_by_years(self):
         self.dataset_operations.separation_by_years(self.df)   
-        self.show_message_box("Успех", 'Данные разделены по годам')
+        self.show_message_box('Успех', 'Данные разделены по годам')
 
     def separation_by_weeks(self):
         self.dataset_operations.separation_by_weeks(self.df)
-        self.show_message_box("Успех", 'Данные разделены по неделям')
+        self.show_message_box('Успех', 'Данные разделены по неделям')
 
     def update_table(self):
         if not self.df.empty:
@@ -208,7 +209,7 @@ class MainWindow(QMainWindow):
         buf = io.StringIO()
         self.df.info(buf=buf)
         s = buf.getvalue()
-        self.show_message_box("Информация о датасете", s)
+        self.show_message_box('Информация о датасете', s)
 
     #добавить универсальный метод для переименование vunitRate и перевод в нижний ренгистр .lower()
     def rename_columns(self):
@@ -217,7 +218,7 @@ class MainWindow(QMainWindow):
 
     def check_null_fields(self):
         s = self.df.isnull().sum()
-        self.show_message_box("Проверка на NaN Null", str(s))
+        self.show_message_box('Проверка на NaN Null', str(s))
 
     #TODO: заполнение Nan Null полей
 
@@ -252,6 +253,19 @@ class MainWindow(QMainWindow):
 
         plt.show()
 
+    def show_graph_by_date(self):
+        res = self.textbox_date_graph.text().split()
+
+        if len(res) == 1:
+            if len(res[0]) == 4:
+                self.plot_rate_year(int(res[0]))
+            else:
+                self.plot_rate_month(int(res[0]))
+        elif len(res) == 2:
+            self.plot_rate_year_month(int(res[1]), int(res[0]))
+        else:
+            self.show_message_box('Ошибка', 'Дата введена неправильно! Пример ввода <месяц>, <год>, <месяц год>')
+
     def plot_rate_month(self, month):
         df_month = self.df[self.df['date'].dt.month == month]
 
@@ -263,16 +277,30 @@ class MainWindow(QMainWindow):
         plt.axhline(median_value, color='r', linestyle='--', label='Медиана')
         plt.axhline(mean_value, color='g', linestyle=':', label='Среднее значение')
 
-        plt.title('Изменение курса за месяц')
+        plt.title(f'Изменение курса за {month} месяц')
         plt.xlabel('Дата')
         plt.ylabel('Курс')
         plt.legend()
 
         plt.show()
-    
-    #TODO: сделать тектовое поле для ввода
-    def show_month_of_years_graph(self):
-        self.plot_rate_month(12)
+
+    def plot_rate_year(self, year):
+        df_month = self.df[self.df['date'].dt.year == year]
+
+        median_value = df_month['vunit_rate'].median()
+        mean_value = df_month['vunit_rate'].mean()
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(df_month['date'], df_month['vunit_rate'], label='Курс')
+        plt.axhline(median_value, color='r', linestyle='--', label='Медиана')
+        plt.axhline(mean_value, color='g', linestyle=':', label='Среднее значение')
+
+        plt.title(f'Изменение курса за {year} год')
+        plt.xlabel('Дата')
+        plt.ylabel('Курс')
+        plt.legend()
+
+        plt.show()
 
     def plot_rate_year_month(self, year, month):
         df_year = self.df[(self.df['date'].dt.year == year) & (self.df['date'].dt.month == month)]
@@ -285,17 +313,12 @@ class MainWindow(QMainWindow):
         plt.axhline(median_value, color='r', linestyle='--', label='Медиана')
         plt.axhline(mean_value, color='g', linestyle=':', label='Среднее значение')
 
-        plt.title('Изменение курса за месяц')
+        plt.title(f'Изменение курса за {month} месяц в {year} год')
         plt.xlabel('Дата')
         plt.ylabel('Курс')
         plt.legend()
 
         plt.show()
-
-    #TODO: сделать тектовое поле для ввода
-    def show_year_month_graph(self):
-        self.plot_rate_year_month(2012, 12)
-
 
 def check_repos():
     dir_h.check_repository(CURR_DIR, 'datasets')
