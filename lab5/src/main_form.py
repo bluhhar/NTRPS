@@ -258,7 +258,7 @@ class MainWindow(QMainWindow):
 
     def show_graph_by_date(self):
         res = self.textbox_date_graph.text().split()
-
+        #добавить try catch
         if len(res) == 1:
             if len(res[0]) == 4:
                 self.plot_rate_year(int(res[0]))
