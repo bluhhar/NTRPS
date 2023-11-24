@@ -1,6 +1,4 @@
 import pandas as pd
-import io
-import re
 import matplotlib.pyplot as plt
 
 from datetime import datetime
@@ -101,7 +99,7 @@ class MainWindow(QMainWindow):
         self.button_show_date_graph.clicked.connect(self.show_date_graph)
 
         self.textbox_date_graph = QLineEdit()
-        self.textbox_date_graph.setPlaceholderText('Введите дату')
+        self.textbox_date_graph.setPlaceholderText('Введите дату (<месяц> ИЛИ <год> ИЛИ <месяц год>)')
 
         self.button_show_graph_by_date = QPushButton('График изменения курса по дате')
         self.button_show_graph_by_date.clicked.connect(self.show_graph_by_date)
@@ -206,96 +204,44 @@ class MainWindow(QMainWindow):
             self.image_window.show()
 
     def info_of_dataset(self):
-        buf = io.StringIO()
-        self.df.info(buf=buf)
-        s = buf.getvalue()
-        self.show_message_box('Информация о датасете', s)
-
-    def convert_to_snake_case(self, s):
-        return ''.join(['_' + i.lower() if i.isupper() else i for i in s]).lstrip('_')
+        self.show_message_box('Информация о датасете', self.dataset_operations.info_of_dataset(self.df))
 
     def rename_columns(self):
-        self.df.columns = [self.convert_to_snake_case(col) for col in self.df.columns]
+        self.df.columns = [self.dataset_operations.rename_columns(col) for col in self.df.columns]
         self.update_table()
 
     def check_null_fields(self):
-        s = self.df.isnull().sum()
-        self.df.ffill(inplace=True)
-        self.df.bfill(inplace=True)
+        s = self.dataset_operations.check_null_fields(self.df)
+        self.dataset_operations.fill_null_fieds(self.df)
         self.update_table()
-        self.show_message_box('Проверка на NaN Null', str(s))
+        self.show_message_box('Проверка на NaN Null', s)
 
     def median_mean(self):
-        median_value = self.df['vunit_rate'].median()
-        mean_value = self.df['vunit_rate'].mean()
-
-        self.df['deviation_from_median'] = self.df['vunit_rate'] - median_value
-        self.df['deviation_from_mean'] = self.df['vunit_rate'] - mean_value
-
+        self.dataset_operations.add_median_mean(self.df)
         self.update_table()
 
     def describe_dataset(self):
-        s = self.df[['vunit_rate', 'deviation_from_median', 'deviation_from_mean']].describe()
-        self.show_message_box('Статистическая информация', str(s))
+        self.show_message_box('Статистическая информация', str(self.dataset_operations.describe_dataset(self.df)))
 
     def show_deviation_graph(self):
-        plt.figure(figsize=(12, 6))
-        plt.boxplot([self.df['vunit_rate'], self.df['deviation_from_median'], self.df['deviation_from_mean']], labels=['vunit_rate', 'deviation_from_median', 'deviation_from_mean'])
-        plt.title('График vunit_rate и отклонений')
-        plt.show()
+        self.dataset_operations.show_deviation_graph(self.df)
 
     def show_date_graph(self):
-        self.df['date'] = pd.to_datetime(self.df['date'])
-
-        plt.figure(figsize=(10, 6))
-        plt.plot(self.df['date'], self.df['vunit_rate'])
-
-        plt.title('Изменение курса за весь период')
-        plt.xlabel('Дата')
-        plt.ylabel('Курс')
-
-        plt.show()
+        self.dataset_operations.show_date_graph(self.df)
 
     def show_graph_by_date(self):
         res = self.textbox_date_graph.text().split()
-        #добавить try catch
-        if len(res) == 1:
-            if len(res[0]) == 4:
-                self.plot_rate_year(int(res[0]))
+        try:
+            if len(res) == 1:
+                if len(res[0]) == 4:
+                    self.dataset_operations.plot_rate_year(self.df, int(res[0]))
+                else:
+                    self.dataset_operations.plot_rate_month(self.df, int(res[0]))
+            #elif len(res) == 2:
             else:
-                self.plot_rate_month(int(res[0]))
-        elif len(res) == 2:
-            self.plot_rate_year_month(int(res[1]), int(res[0]))
-        else:
+                self.dataset_operations.plot_rate_year_month(self.df, int(res[1]), int(res[0]))
+        except Exception as e:
             self.show_message_box('Ошибка', 'Дата введена неправильно! Пример ввода <месяц>, <год>, <месяц год>')
-
-    def plot_rate(self, df, title):
-        median_value = df['vunit_rate'].median()
-        mean_value = df['vunit_rate'].mean()
-
-        plt.figure(figsize=(10, 6))
-        plt.plot(df['date'], df['vunit_rate'], label='Курс')
-        plt.axhline(median_value, color='r', linestyle='--', label='Медиана')
-        plt.axhline(mean_value, color='g', linestyle=':', label='Среднее значение')
-
-        plt.title(title)
-        plt.xlabel('Дата')
-        plt.ylabel('Курс')
-        plt.legend()
-
-        plt.show()
-
-    def plot_rate_month(self, month):
-        df_month = self.df[self.df['date'].dt.month == month]
-        self.plot_rate(df_month, f'Изменение курса за {month} месяц')
-
-    def plot_rate_year(self, year):
-        df_year = self.df[self.df['date'].dt.year == year]
-        self.plot_rate(df_year, f'Изменение курса за {year} год')
-
-    def plot_rate_year_month(self, year, month):
-        df_year_month = self.df[(self.df['date'].dt.year == year) & (self.df['date'].dt.month == month)]
-        self.plot_rate(df_year_month, f'Изменение курса за {month} месяц в {year} год')
 
 def check_repos():
     dir_h.check_repository(CURR_DIR, 'datasets')
