@@ -37,6 +37,11 @@ class DatasetOperations:
             return None
         else:
             return data.drop(columns=['date'])
+        
+    def info_of_dataset(self, df: pd.DataFrame) -> str:
+        buf = io.StringIO()
+        self.df.info(buf=buf)
+        s = buf.getvalue()
 
     def next(self, df: pd.DataFrame, index: int) -> None | tuple[str]:
         if index < len(df):
