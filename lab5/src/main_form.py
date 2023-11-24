@@ -1,5 +1,4 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 
 from datetime import datetime
 
@@ -28,8 +27,14 @@ class MainWindow(QMainWindow):
 
         self.dataset_operations = DatasetOperations(CURR_DIR)
         
+        self.is_loaded_dataset = False
+        self.is_nan_check = False
+        self.is_rename_columns = False
+        self.is_add_median_mean = False
+
         self.init_ui()
         self.choose_dataset_from_file()
+
 
     def init_ui(self):
         self.setWindowTitle('Операции с датасетом')
@@ -83,26 +88,33 @@ class MainWindow(QMainWindow):
 
         self.button_check_null_fields = QPushButton('Проверка на NaN')
         self.button_check_null_fields.clicked.connect(self.check_null_fields)
+        self.button_check_null_fields.setEnabled(False)
         
         self.button_median_mean = QPushButton('Медианы и средний')
         self.button_median_mean.clicked.connect(self.median_mean)
+        self.button_median_mean.setEnabled(False)
 
         self.button_describe_dataset = QPushButton('Статистическая информация')
         self.button_describe_dataset.clicked.connect(self.describe_dataset)
+        self.button_describe_dataset.setEnabled(False)
 
         self.label_graphs = QLabel('Графики датасета')
 
         self.button_show_deviation_graph = QPushButton('График отклонения')
         self.button_show_deviation_graph.clicked.connect(self.show_deviation_graph)
+        self.button_show_deviation_graph.setEnabled(False)
 
         self.button_show_date_graph = QPushButton('График изменения курса')
         self.button_show_date_graph.clicked.connect(self.show_date_graph)
+        self.button_show_date_graph.setEnabled(False)
 
         self.textbox_date_graph = QLineEdit()
         self.textbox_date_graph.setPlaceholderText('Введите дату (<месяц> ИЛИ <год> ИЛИ <месяц год>)')
+        self.textbox_date_graph.setEnabled(False)
 
         self.button_show_graph_by_date = QPushButton('График изменения курса по дате')
         self.button_show_graph_by_date.clicked.connect(self.show_graph_by_date)
+        self.button_show_graph_by_date.setEnabled(False)
 
         v_layout.addWidget(self.label_info_dataset)
         v_layout.addWidget(self.button_info_of_dataset)
@@ -143,9 +155,11 @@ class MainWindow(QMainWindow):
             if(self.df is None or self.df.empty):
                 self.df = dat_h.create_dataset([self.folder_path])
                 self.current_fields = self.df.columns.tolist()
+                self.is_loaded_dataset = True
             else:
                 self.df = dat_h.create_dataset_from_files([self.folder_path], self.split_fields(self.combo_box_fields.currentText()))#self.combo_box_fields.currentText())
                 self.current_fields = self.df.columns.tolist()
+                self.is_loaded_dataset = True
             self.update_table()
         except Exception as e:
             self.show_message_box('Ошибка', str(e))
@@ -207,40 +221,76 @@ class MainWindow(QMainWindow):
         self.show_message_box('Информация о датасете', self.dataset_operations.info_of_dataset(self.df))
 
     def rename_columns(self):
-        self.df.columns = [self.dataset_operations.rename_columns(col) for col in self.df.columns]
-        self.update_table()
+        try:
+            if(self.is_loaded_dataset == True):
+                self.df.columns = [self.dataset_operations.rename_columns(col) for col in self.df.columns]
+                self.is_rename_columns = True
+                self.update_table()
+                self.button_check_null_fields.setEnabled(True)
+        except Exception as e:
+            self.show_message_box('Ошибка', e)
+
 
     def check_null_fields(self):
-        s = self.dataset_operations.check_null_fields(self.df)
-        self.dataset_operations.fill_null_fieds(self.df)
-        self.update_table()
-        self.show_message_box('Проверка на NaN Null', s)
+        try:
+            if(self.is_rename_columns == True):
+                s = self.dataset_operations.check_null_fields(self.df)
+                self.dataset_operations.fill_null_fieds(self.df)
+                self.update_table()
+                self.show_message_box('Проверка на NaN Null', s)
+                self.is_nan_check = True
+                self.button_median_mean.setEnabled(True)
+        except Exception as e:
+            self.show_message_box('Ошибка', e)
 
     def median_mean(self):
-        self.dataset_operations.add_median_mean(self.df)
-        self.update_table()
+        try:
+            if(self.is_nan_check == True):
+                self.dataset_operations.add_median_mean(self.df)
+                self.is_add_median_mean = True
+                self.update_table()
+                self.button_describe_dataset.setEnabled(True)
+                self.button_show_deviation_graph.setEnabled(True)
+                self.button_show_date_graph.setEnabled(True)
+                self.textbox_date_graph.setEnabled(True)
+                self.button_show_graph_by_date.setEnabled(True)
+        except Exception as e:
+            self.show_message_box('Ошибка', e)
 
     def describe_dataset(self):
-        self.show_message_box('Статистическая информация', str(self.dataset_operations.describe_dataset(self.df)))
+        try:
+            if(self.is_add_median_mean == True):
+                self.show_message_box('Статистическая информация', str(self.dataset_operations.describe_dataset(self.df)))
+        except Exception as e:
+            self.show_message_box('Ошибка', e)
 
     def show_deviation_graph(self):
-        self.dataset_operations.show_deviation_graph(self.df)
+        try:
+            if(self.is_add_median_mean == True):
+                self.dataset_operations.show_deviation_graph(self.df)
+        except Exception as e:
+            self.show_message_box('Ошибка', e)
 
     def show_date_graph(self):
-        self.dataset_operations.show_date_graph(self.df)
+        try:
+            if(self.is_add_median_mean == True):
+                self.dataset_operations.show_date_graph(self.df)
+        except Exception as e:
+            self.show_message_box('Ошибка', e)
 
     def show_graph_by_date(self):
-        res = self.textbox_date_graph.text().split()
         try:
-            if len(res) == 1:
-                if len(res[0]) == 4:
-                    self.dataset_operations.plot_rate_year(self.df, int(res[0]))
-                else:
-                    self.dataset_operations.plot_rate_month(self.df, int(res[0]))
+            if(self.is_add_median_mean == True):
+                res = self.textbox_date_graph.text().split()
+                if len(res) == 1:
+                    if len(res[0]) == 4:
+                        self.dataset_operations.plot_rate_year(self.df, int(res[0]))
+                    else:
+                        self.dataset_operations.plot_rate_month(self.df, int(res[0]))
             #elif len(res) == 2:
-            else:
-                self.dataset_operations.plot_rate_year_month(self.df, int(res[1]), int(res[0]))
-        except Exception as e:
+                else:
+                    self.dataset_operations.plot_rate_year_month(self.df, int(res[1]), int(res[0]))
+        except Exception:
             self.show_message_box('Ошибка', 'Дата введена неправильно! Пример ввода <месяц>, <год>, <месяц год>')
 
 def check_repos():
