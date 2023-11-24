@@ -5,6 +5,19 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 class DatasetOperations:
+    """
+    Класс предназначен для выполнения различных операций с датасетами.
+
+    Атрибуты
+    -----------
+    CURR_DIR : str
+        Текущий рабочий каталог.
+
+    Методы
+    -------
+    __init__(self, curr_dir: str)
+        Инициализирует объект класса DatasetOperations.
+    """
     def __init__(self, curr_dir):
         self.CURR_DIR = curr_dir
 

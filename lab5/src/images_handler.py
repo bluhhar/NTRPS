@@ -12,7 +12,20 @@ from datetime import datetime
 IMAGES_FIELDS = ['date', 'file_name', 'url', 'path']
 
 class ImagesHandler:
-    def __init__(self, curr_dir):
+    """
+    Класс предназначен для загрузки датасета картинок с Яндекс.Картинок
+
+    Атрибуты
+    -----------
+    CURR_DIR : str
+        Текущий рабочий каталог.
+
+    Методы
+    -------
+    __init__(self, curr_dir: str)
+        Инициализирует объект класса ImagesHandler.
+    """
+    def __init__(self, curr_dir: str):
         self.CURR_DIR = curr_dir
 
     def write_csv_file(self, path: str, data: list) -> None:

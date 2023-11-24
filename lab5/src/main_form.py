@@ -206,7 +206,6 @@ class MainWindow(QMainWindow):
                     else:
                         item_str = str(item)
                     self.table.setItem(i, j, QTableWidgetItem(item_str))
-                    #self.table.setItem(i, j, QTableWidgetItem(str(self.df.iat[i, j])))
             self.table.resizeColumnsToContents()
 
     def show_form_data(self):
@@ -218,7 +217,11 @@ class MainWindow(QMainWindow):
             self.image_window.show()
 
     def info_of_dataset(self):
-        self.show_message_box('Информация о датасете', self.dataset_operations.info_of_dataset(self.df))
+        try:
+            if(self.is_loaded_dataset == True):
+                self.show_message_box('Информация о датасете', self.dataset_operations.info_of_dataset(self.df))
+        except Exception as e:
+            self.show_message_box('Ошибка', e)
 
     def rename_columns(self):
         try:
@@ -287,7 +290,6 @@ class MainWindow(QMainWindow):
                         self.dataset_operations.plot_rate_year(self.df, int(res[0]))
                     else:
                         self.dataset_operations.plot_rate_month(self.df, int(res[0]))
-            #elif len(res) == 2:
                 else:
                     self.dataset_operations.plot_rate_year_month(self.df, int(res[1]), int(res[0]))
         except Exception:

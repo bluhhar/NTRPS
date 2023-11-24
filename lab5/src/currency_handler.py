@@ -6,7 +6,23 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 
 class CurrencyHandler:
-    def __init__(self, curr_dir):
+    """
+    Класс предназначен для загрузки датасета валют
+
+    Атрибуты
+    -----------
+    CURR_DIR : str
+        Текущий рабочий каталог.
+    
+    currency_ids : str
+        Текущие ID валют.
+
+    Методы
+    -------
+    __init__(self, curr_dir: str)
+        Инициализирует объект класса CurrencyHandler.
+    """
+    def __init__(self, curr_dir: str):
         self.CURR_DIR = curr_dir
         self.currency_ids = self.get_ids_of_currency()
 
