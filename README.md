@@ -178,6 +178,9 @@ folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Folder')
 
 </details>
 
+<details>
+    <summary><h1><strong>Лабораторная работа №4</strong></h1></summary>
+
 ## [Отчет](https://github.com/bluhhar/NTRPS/blob/main/lab4/docs/lab04__Python_M_PIN_RIS_2308_Timofeev%20Aleksander.docx) (+) | Защита (+)
 
 **Требования**
