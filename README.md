@@ -22,6 +22,13 @@ git clone https://github.com/bluhhar/NTRPS
 cd ./NTRPS/lab5
 ./start.sh
 ```
+* Docker
+```shell
+git clone https://github.com/bluhhar/NTRPS
+cd ./NTRPS/lab5
+docker build -t lab5 .
+docker run lab5
+```
 * Manual
 ```shell
 git clone https://github.com/bluhhar/NTRPS
