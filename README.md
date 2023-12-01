@@ -10,6 +10,19 @@
 ```
 
 ### Установка
+* Windows
+```shell
+git clone https://github.com/bluhhar/NTRPS
+cd ./NTRPS/lab5
+./start.bat
+```
+* Linux
+```shell
+git clone https://github.com/bluhhar/NTRPS
+cd ./NTRPS/lab5
+./start.sh
+```
+* Manual
 ```shell
 git clone https://github.com/bluhhar/NTRPS
 python -m venv venv
@@ -211,6 +224,36 @@ folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Folder')
 
 > requests \
 > beautifulsoup4 \
-> pandas 
+> pandas \
+> matplotlib
+
+</details>
+
+<details>
+    <summary><h1><strong>Лабораторная работа №5</strong></h1></summary>
+
+## [Отчет](https://github.com) (-) | Защита (+)
+
+**Требования**
+* Github-репозитории управляются из среды разработки. Коммиты созданные через сайт не засчитываются.
+* Выполненная работа должна содержать несколько коммитов, отражающих процесс выполнения вами лабораторной работы.
+* Сообщения коммитов должны исчерпывающе описывать изменения, которые они содержат.
+* Необходимо разделить код на функции так, что каждая функция имеет небольшую зону ответсвенности и решает одну изолированную задачу, которую не повторяет ни одна другая функция.
+* Необходимо оформить ноутбук для удобства сдачи лабораторной работы.
+* Код оформить в соответствии с PEP8.
+* Функции должны иметь dosctring.
+* Сигнатура функции оформлена с использованием type-hinting.
+
+**Задание**
+1. Добавление функционала 4 лабораторной работы в интерфейс 3й
+2. Создание .bat, .sh, Dockerfile
+
+**Используемые сторонние библиотеки:**
+
+> requests \
+> beautifulsoup4 \
+> pandas \
+> PyQt6 \
+> matplotlib
 
 </details>

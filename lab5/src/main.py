@@ -53,8 +53,8 @@ def test_currency():
     #dataset_operations.separation_by_years(df)
     #dataset_operations.separation_by_weeks(df)
 
-    #print('---Получение данных по определенной дате---')
-    #print(dataset_operations.get_data_from_date(df, datetime(2023, 1, 24)))
+    print('---Получение данных по определенной дате---')
+    print(dataset_operations.get_data_from_date(df, datetime(2023, 1, 24)))
 
     #print('---Работа next()---')
     #for index in range(0, len(df)):
